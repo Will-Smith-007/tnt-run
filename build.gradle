@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'de.will-smith-007.tnt-run'
+version = '1.0.0'
+
+shadowJar {
+    archiveBaseName.set('tntrun')
+    archiveClassifier.set('production')
+    archiveVersion.set(this.version.toString())
+}
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'papermc'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.0.8'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
+
+test {
+    useJUnitPlatform()
+}

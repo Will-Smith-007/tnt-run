@@ -1,0 +1,15 @@
+main: de.will_smith_007.tntrun.TNTRun
+name: TNT-Run
+author: Will_Smith_007
+api-version: 1.19
+version: 1.0.0
+
+commands:
+  tntrun:
+    description: Setup the game.
+    permission: tntrun.setup
+  start:
+    description: Shorten the countdown in the lobby phase.
+    permission: tntrun.start
+  stats:
+    description: Show your current statistics of the game.
