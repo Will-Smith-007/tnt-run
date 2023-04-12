@@ -12,6 +12,7 @@ import de.will_smith_007.tntrun.schedulers.EndingCountdownScheduler;
 import de.will_smith_007.tntrun.schedulers.LobbyCountdownScheduler;
 import de.will_smith_007.tntrun.schedulers.PlayerAFKScannerScheduler;
 import de.will_smith_007.tntrun.schedulers.ProtectionCountdownScheduler;
+import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.World;

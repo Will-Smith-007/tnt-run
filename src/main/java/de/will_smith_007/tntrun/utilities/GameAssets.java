@@ -1,4 +1,4 @@
-package de.will_smith_007.tntrun.managers;
+package de.will_smith_007.tntrun.utilities;
 
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.game_config.GameConfiguration;
