@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 
-public class ProtectionCountdownScheduler extends Scheduler {
+public final class ProtectionCountdownScheduler implements IScheduler {
 
     private int taskID, countdown;
     private boolean isRunning;

@@ -16,7 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Collection;
 import java.util.List;
 
-public class PlayerAFKScannerScheduler extends Scheduler {
+public final class PlayerAFKScannerScheduler implements IScheduler {
 
     private int taskID;
     private boolean isRunning;

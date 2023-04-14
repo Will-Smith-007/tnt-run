@@ -9,7 +9,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 
-public class EndingCountdownScheduler extends Scheduler {
+public final class EndingCountdownScheduler implements IScheduler {
 
     private int taskID, countdown;
     private boolean isRunning = false;

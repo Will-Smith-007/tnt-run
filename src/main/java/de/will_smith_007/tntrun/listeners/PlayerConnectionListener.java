@@ -73,7 +73,7 @@ public class PlayerConnectionListener implements Listener {
                 playerQuitEvent.quitMessage(Component.text(
                         Message.PREFIX + "§e" + player.getName() + " §7left the game."
                 ));
-                //This event is called before player removing from the online players' collection.
+                //This event is called before player removing from the online player collection.
                 GAME_MANAGER.cancelCountdownIfNotEnoughPlayers((Bukkit.getOnlinePlayers().size() - 1));
             }
             case INGAME, PROTECTION -> {

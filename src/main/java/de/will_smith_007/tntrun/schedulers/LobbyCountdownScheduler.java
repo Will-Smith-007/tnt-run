@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-public final class LobbyCountdownScheduler extends Scheduler {
+public final class LobbyCountdownScheduler implements IScheduler {
 
     private int taskID;
     @Setter

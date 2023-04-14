@@ -5,11 +5,11 @@ package de.will_smith_007.tntrun.schedulers;
  * <br> <br>
  * Holds basic methods for scheduler creation such as "start", "stop" and "isRunning".
  */
-public abstract class Scheduler {
+public interface IScheduler {
 
-    public abstract void start();
+    void start();
 
-    public abstract void stop();
+    void stop();
 
-    public abstract boolean isRunning();
+    boolean isRunning();
 }
