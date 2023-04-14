@@ -97,7 +97,7 @@ public final class LobbyCountdownScheduler implements IScheduler {
                     );
 
                     onlinePlayers.forEach(player -> {
-                        player.teleport(gameMapSpawn);
+                        player.teleport(gameMapSpawn.toCenterLocation());
                         player.setGameMode(GameMode.ADVENTURE);
                     });
 

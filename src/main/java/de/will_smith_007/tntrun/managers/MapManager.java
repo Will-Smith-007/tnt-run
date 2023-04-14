@@ -96,9 +96,9 @@ public class MapManager {
 
         if (world == null) return null;
 
-        final double x = YAML_CONFIGURATION.getDouble(mapName + ".X");
-        final double y = YAML_CONFIGURATION.getDouble(mapName + ".Y");
-        final double z = YAML_CONFIGURATION.getDouble(mapName + ".Z");
+        final double x = YAML_CONFIGURATION.getInt(mapName + ".X");
+        final double y = YAML_CONFIGURATION.getInt(mapName + ".Y");
+        final double z = YAML_CONFIGURATION.getInt(mapName + ".Z");
         final float yaw = (float) YAML_CONFIGURATION.getDouble(mapName + ".Yaw");
         final float pitch = (float) YAML_CONFIGURATION.getDouble(mapName + ".Pitch");
 
@@ -172,9 +172,9 @@ public class MapManager {
      * @param spawnLocation Location for the map spawn which should be set.
      */
     public void setMapSpawnPoint(@NonNull String mapName, @NonNull Location spawnLocation) {
-        YAML_CONFIGURATION.set(mapName + ".X", spawnLocation.getX());
-        YAML_CONFIGURATION.set(mapName + ".Y", spawnLocation.getY());
-        YAML_CONFIGURATION.set(mapName + ".Z", spawnLocation.getZ());
+        YAML_CONFIGURATION.set(mapName + ".X", spawnLocation.getBlockX());
+        YAML_CONFIGURATION.set(mapName + ".Y", spawnLocation.getBlockY());
+        YAML_CONFIGURATION.set(mapName + ".Z", spawnLocation.getBlockZ());
         YAML_CONFIGURATION.set(mapName + ".Yaw", spawnLocation.getYaw());
         YAML_CONFIGURATION.set(mapName + ".Pitch", spawnLocation.getPitch());
 

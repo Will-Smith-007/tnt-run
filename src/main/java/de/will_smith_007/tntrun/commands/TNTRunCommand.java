@@ -13,15 +13,15 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class TNTRunCommand implements TabExecutor {
 
     private final MapManager MAP_MANAGER;
     @Getter
-    private final List<Player> PLAYERS_IN_DEATH_HEIGHT_SETUP = new ArrayList<>();
+    private final HashSet<Player> PLAYERS_IN_DEATH_HEIGHT_SETUP = new HashSet<>();
 
     public TNTRunCommand(@NonNull MapManager mapManager) {
         this.MAP_MANAGER = mapManager;

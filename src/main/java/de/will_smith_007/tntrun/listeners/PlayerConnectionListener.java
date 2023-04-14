@@ -16,6 +16,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 public class PlayerConnectionListener implements Listener {
 
@@ -23,17 +25,27 @@ public class PlayerConnectionListener implements Listener {
     private final GameManager GAME_MANAGER;
     private final MapManager MAP_MANAGER;
 
+    private Team playerTeam;
+
     public PlayerConnectionListener(@NonNull GameAssets gameAssets,
                                     @NonNull GameManager gameManager,
                                     @NonNull MapManager mapManager) {
         this.GAME_ASSETS = gameAssets;
         this.GAME_MANAGER = gameManager;
         this.MAP_MANAGER = mapManager;
+
+        final Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        if ((playerTeam = mainScoreboard.getTeam("players")) == null) {
+            playerTeam = mainScoreboard.registerNewTeam("players");
+        }
+        this.playerTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
     }
 
     @EventHandler
     public void onPlayerJoin(@NonNull PlayerJoinEvent playerJoinEvent) {
         final Player player = playerJoinEvent.getPlayer();
+
+        playerTeam.addEntry(player.getName());
 
         if (GAME_ASSETS.getGameState() == GameState.LOBBY) {
             playerJoinEvent.joinMessage(Component.text(

@@ -13,14 +13,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.HashSet;
 import java.util.List;
 
 public class PlayerSetupDeathHeightListener implements Listener {
 
-    private final List<Player> PLAYERS_IN_DEATH_HEIGHT_SETUP;
+    private final HashSet<Player> PLAYERS_IN_DEATH_HEIGHT_SETUP;
     private final MapManager MAP_MANAGER;
 
-    public PlayerSetupDeathHeightListener(@NonNull List<Player> playersInDeathHeightSetup,
+    public PlayerSetupDeathHeightListener(@NonNull HashSet<Player> playersInDeathHeightSetup,
                                           @NonNull MapManager mapManager) {
         this.PLAYERS_IN_DEATH_HEIGHT_SETUP = playersInDeathHeightSetup;
         this.MAP_MANAGER = mapManager;
