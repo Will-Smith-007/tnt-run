@@ -3,6 +3,7 @@ package de.will_smith_007.tntrun;
 import de.will_smith_007.tntrun.commands.StartCommand;
 import de.will_smith_007.tntrun.commands.StatsCommand;
 import de.will_smith_007.tntrun.commands.TNTRunCommand;
+import de.will_smith_007.tntrun.listeners.CancelListener;
 import de.will_smith_007.tntrun.listeners.PlayerConnectionListener;
 import de.will_smith_007.tntrun.listeners.PlayerMoveListener;
 import de.will_smith_007.tntrun.listeners.PlayerSetupDeathHeightListener;
@@ -91,7 +92,8 @@ public class TNTRun extends JavaPlugin {
         //Listener registration
         registerListeners(new PlayerConnectionListener(gameAssets, gameManager, mapManager),
                 new PlayerSetupDeathHeightListener(tntRunCommand.getPLAYERS_IN_DEATH_HEIGHT_SETUP(), mapManager),
-                new PlayerMoveListener(this, gameAssets, endingCountdownScheduler, statsManager));
+                new PlayerMoveListener(this, gameAssets, endingCountdownScheduler, statsManager),
+                new CancelListener());
 
         LOGGER.info("TNT-Run was started.");
     }
