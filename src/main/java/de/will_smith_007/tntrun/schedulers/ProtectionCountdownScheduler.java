@@ -7,7 +7,6 @@ import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 
@@ -15,7 +14,6 @@ public final class ProtectionCountdownScheduler implements IScheduler {
 
     private int taskID, countdown;
     private boolean isRunning;
-    private final BukkitScheduler BUKKIT_SCHEDULER = Bukkit.getScheduler();
     private final JavaPlugin JAVA_PLUGIN;
     private final GameAssets GAME_ASSETS;
     private final PlayerAFKScannerScheduler PLAYER_AFK_SCANNER_SCHEDULER;
@@ -45,7 +43,7 @@ public final class ProtectionCountdownScheduler implements IScheduler {
 
             onlinePlayers.forEach(player ->
                     player.sendPlainMessage(Message.PREFIX + "Protection ends in §c" + countdown +
-                            (countdown == 1 ? " second§7." : " seconds§7.") ));
+                            (countdown == 1 ? " second§7." : " seconds§7.")));
 
             countdown--;
         }, 0L, 20L);

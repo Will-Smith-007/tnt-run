@@ -34,7 +34,7 @@ public final class PlayerAFKScannerScheduler implements IScheduler {
     @Override
     public void start() {
         isRunning = true;
-        taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
+        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
             final GameState gameState = GAME_ASSETS.getGameState();
 
             if (gameState == GameState.ENDING) {
@@ -71,7 +71,7 @@ public final class PlayerAFKScannerScheduler implements IScheduler {
     @Override
     public void stop() {
         isRunning = false;
-        Bukkit.getScheduler().cancelTask(taskID);
+        BUKKIT_SCHEDULER.cancelTask(taskID);
     }
 
     @Override

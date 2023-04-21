@@ -3,8 +3,8 @@ package de.will_smith_007.tntrun.schedulers;
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.game_config.GameConfiguration;
-import de.will_smith_007.tntrun.utilities.GameAssets;
 import de.will_smith_007.tntrun.managers.MapManager;
+import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -14,7 +14,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +32,6 @@ public final class LobbyCountdownScheduler implements IScheduler {
     private final GameAssets GAME_ASSETS;
     private final MapManager MAP_MANAGER;
     private final ProtectionCountdownScheduler PROTECTION_COUNTDOWN_SCHEDULER;
-    private final BukkitScheduler BUKKIT_SCHEDULER = Bukkit.getScheduler();
 
     public LobbyCountdownScheduler(@NonNull JavaPlugin javaPlugin,
                                    @NonNull GameAssets gameAssets,

@@ -5,7 +5,6 @@ import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 
@@ -13,7 +12,6 @@ public final class EndingCountdownScheduler implements IScheduler {
 
     private int taskID, countdown;
     private boolean isRunning = false;
-    private final BukkitScheduler BUKKIT_SCHEDULER = Bukkit.getScheduler();
     private final JavaPlugin JAVA_PLUGIN;
 
     public EndingCountdownScheduler(@NonNull JavaPlugin javaPlugin) {
