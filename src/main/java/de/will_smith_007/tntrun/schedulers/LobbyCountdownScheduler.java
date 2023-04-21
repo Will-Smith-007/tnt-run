@@ -46,11 +46,13 @@ public final class LobbyCountdownScheduler implements IScheduler {
 
     @Override
     public void start() {
+        if (isRunning) return;
+
         countdown = 60;
         isRunning = true;
         LOGGER.info("The countdown is starting...");
 
-        taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
+        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
             final Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
 
             onlinePlayers.forEach(player -> player.setLevel(countdown));
@@ -113,6 +115,8 @@ public final class LobbyCountdownScheduler implements IScheduler {
 
     @Override
     public void stop() {
+        if (!isRunning) return;
+
         isRunning = false;
         BUKKIT_SCHEDULER.cancelTask(taskID);
         LOGGER.info("The starting countdown was cancelled.");

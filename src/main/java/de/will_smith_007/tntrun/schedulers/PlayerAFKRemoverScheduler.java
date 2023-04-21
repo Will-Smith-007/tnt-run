@@ -16,7 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Collection;
 import java.util.List;
 
-public final class PlayerAFKScannerScheduler implements IScheduler {
+public final class PlayerAFKRemoverScheduler implements IScheduler {
 
     private int taskID;
     private boolean isRunning;
@@ -24,7 +24,7 @@ public final class PlayerAFKScannerScheduler implements IScheduler {
     private final GameAssets GAME_ASSETS;
     private final List<Material> REMOVING_GAME_MATERIALS;
 
-    public PlayerAFKScannerScheduler(@NonNull JavaPlugin javaPlugin,
+    public PlayerAFKRemoverScheduler(@NonNull JavaPlugin javaPlugin,
                                      @NonNull GameAssets gameAssets) {
         this.JAVA_PLUGIN = javaPlugin;
         this.GAME_ASSETS = gameAssets;
@@ -33,6 +33,8 @@ public final class PlayerAFKScannerScheduler implements IScheduler {
 
     @Override
     public void start() {
+        if (isRunning) return;
+
         isRunning = true;
         taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
             final GameState gameState = GAME_ASSETS.getGameState();
@@ -70,6 +72,8 @@ public final class PlayerAFKScannerScheduler implements IScheduler {
 
     @Override
     public void stop() {
+        if (!isRunning) return;
+
         isRunning = false;
         BUKKIT_SCHEDULER.cancelTask(taskID);
     }

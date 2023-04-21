@@ -20,6 +20,8 @@ public final class EndingCountdownScheduler implements IScheduler {
 
     @Override
     public void start() {
+        if (isRunning) return;
+
         isRunning = true;
         countdown = 10;
         taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
@@ -38,6 +40,8 @@ public final class EndingCountdownScheduler implements IScheduler {
 
     @Override
     public void stop() {
+        if (!isRunning) return;
+
         isRunning = false;
         BUKKIT_SCHEDULER.cancelTask(taskID);
     }

@@ -14,7 +14,7 @@ import de.will_smith_007.tntrun.managers.StatsManager;
 import de.will_smith_007.tntrun.mysql.MySQL;
 import de.will_smith_007.tntrun.schedulers.EndingCountdownScheduler;
 import de.will_smith_007.tntrun.schedulers.LobbyCountdownScheduler;
-import de.will_smith_007.tntrun.schedulers.PlayerAFKScannerScheduler;
+import de.will_smith_007.tntrun.schedulers.PlayerAFKRemoverScheduler;
 import de.will_smith_007.tntrun.schedulers.ProtectionCountdownScheduler;
 import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
@@ -62,7 +62,7 @@ public class TNTRun extends JavaPlugin {
                 statsSQL
         );
 
-        final PlayerAFKScannerScheduler playerAFKScannerScheduler = new PlayerAFKScannerScheduler(
+        final PlayerAFKRemoverScheduler playerAFKRemoverScheduler = new PlayerAFKRemoverScheduler(
                 this,
                 gameAssets
         );
@@ -70,7 +70,7 @@ public class TNTRun extends JavaPlugin {
         final ProtectionCountdownScheduler protectionCountdownScheduler = new ProtectionCountdownScheduler(
                 this,
                 gameAssets,
-                playerAFKScannerScheduler
+                playerAFKRemoverScheduler
         );
 
         final LobbyCountdownScheduler lobbyCountdownScheduler = new LobbyCountdownScheduler(

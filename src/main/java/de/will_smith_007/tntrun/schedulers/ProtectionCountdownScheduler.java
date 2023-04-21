@@ -16,18 +16,20 @@ public final class ProtectionCountdownScheduler implements IScheduler {
     private boolean isRunning;
     private final JavaPlugin JAVA_PLUGIN;
     private final GameAssets GAME_ASSETS;
-    private final PlayerAFKScannerScheduler PLAYER_AFK_SCANNER_SCHEDULER;
+    private final PlayerAFKRemoverScheduler PLAYER_AFK_REMOVER_SCHEDULER;
 
     public ProtectionCountdownScheduler(@NonNull JavaPlugin javaPlugin,
                                         @NonNull GameAssets gameAssets,
-                                        @NonNull PlayerAFKScannerScheduler playerAFKScannerScheduler) {
+                                        @NonNull PlayerAFKRemoverScheduler playerAFKRemoverScheduler) {
         this.JAVA_PLUGIN = javaPlugin;
         this.GAME_ASSETS = gameAssets;
-        this.PLAYER_AFK_SCANNER_SCHEDULER = playerAFKScannerScheduler;
+        this.PLAYER_AFK_REMOVER_SCHEDULER = playerAFKRemoverScheduler;
     }
 
     @Override
     public void start() {
+        if (isRunning) return;
+
         countdown = 5;
         isRunning = true;
         taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
@@ -36,7 +38,7 @@ public final class ProtectionCountdownScheduler implements IScheduler {
 
             if (countdown == 0) {
                 GAME_ASSETS.setGameState(GameState.INGAME);
-                PLAYER_AFK_SCANNER_SCHEDULER.start();
+                PLAYER_AFK_REMOVER_SCHEDULER.start();
                 stop();
                 return;
             }
@@ -51,6 +53,8 @@ public final class ProtectionCountdownScheduler implements IScheduler {
 
     @Override
     public void stop() {
+        if (!isRunning) return;
+
         isRunning = false;
         BUKKIT_SCHEDULER.cancelTask(taskID);
     }
