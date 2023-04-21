@@ -48,6 +48,8 @@ public class PlayerConnectionListener implements Listener {
         playerTeam.addEntry(player.getName());
 
         if (GAME_ASSETS.getGameState() == GameState.LOBBY) {
+            player.setGameMode(GameMode.ADVENTURE);
+
             playerJoinEvent.joinMessage(Component.text(
                     Message.PREFIX + "§e" + player.getName() + " §7joined the game!"
             ));
