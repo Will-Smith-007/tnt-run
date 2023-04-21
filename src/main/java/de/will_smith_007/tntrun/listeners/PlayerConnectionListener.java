@@ -8,6 +8,7 @@ import de.will_smith_007.tntrun.managers.GameManager;
 import de.will_smith_007.tntrun.managers.MapManager;
 import lombok.NonNull;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -38,7 +39,8 @@ public class PlayerConnectionListener implements Listener {
         if ((playerTeam = mainScoreboard.getTeam("players")) == null) {
             playerTeam = mainScoreboard.registerNewTeam("players");
         }
-        this.playerTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        playerTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        playerTeam.color(NamedTextColor.GRAY);
     }
 
     @EventHandler
