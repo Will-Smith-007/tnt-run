@@ -3,12 +3,13 @@ package de.will_smith_007.tntrun.schedulers;
 import de.will_smith_007.tntrun.enums.Message;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
 
-public final class EndingCountdownScheduler implements IScheduler {
+public final class EndingCountdownScheduler implements IScheduler, ICountdownOptions {
 
     private int taskID, countdown;
     private boolean isRunning = false;
@@ -29,8 +30,10 @@ public final class EndingCountdownScheduler implements IScheduler {
                 case 10, 5, 3, 2, 1 -> {
                     final Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
 
-                    onlinePlayers.forEach(player ->
-                            player.sendPlainMessage(Message.PREFIX + getEndingCountdownMessage(countdown)));
+                    onlinePlayers.forEach(player -> {
+                        player.sendPlainMessage(Message.PREFIX + getCountdownMessage(countdown));
+                        playCountdownSound(player);
+                    });
                 }
                 case 0 -> Bukkit.getServer().shutdown();
             }
@@ -54,10 +57,16 @@ public final class EndingCountdownScheduler implements IScheduler {
     /**
      * Gets the message of the current countdown.
      *
-     * @param countdown The current countdown until the game ends.
+     * @param currentCountdown The current countdown until the game ends.
      * @return The ending countdown message which is going to send to the players.
      */
-    public @NonNull String getEndingCountdownMessage(int countdown) {
+    @Override
+    public @NonNull String getCountdownMessage(int currentCountdown) {
         return "The game is ending in §c" + countdown + (countdown == 1 ? " second§7." : " seconds§7.");
+    }
+
+    @Override
+    public void playCountdownSound(@NonNull Player player) {
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
     }
 }

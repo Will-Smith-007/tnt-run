@@ -8,10 +8,7 @@ import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-public final class LobbyCountdownScheduler implements IScheduler {
+public final class LobbyCountdownScheduler implements IScheduler, ICountdownOptions {
 
     private int taskID;
     @Setter
@@ -59,8 +56,10 @@ public final class LobbyCountdownScheduler implements IScheduler {
 
             switch (countdown) {
                 //Lobby phase mechanics.
-                case 30, 10, 5, 3, 2, 1 -> onlinePlayers.forEach(player ->
-                        player.sendPlainMessage(Message.PREFIX + getStartingCountdownMessage(countdown)));
+                case 30, 10, 5, 3, 2, 1 -> onlinePlayers.forEach(player -> {
+                        player.sendPlainMessage(Message.PREFIX + getCountdownMessage(countdown));
+                        playCountdownSound(player);
+                });
                 case 0 -> {
                     //Starting game mechanics.
                     onlinePlayers.forEach(player ->
@@ -130,10 +129,16 @@ public final class LobbyCountdownScheduler implements IScheduler {
     /**
      * Gets the message of the current countdown.
      *
-     * @param countdown The current countdown until the game starts.
+     * @param currentCountdown The current countdown until the game starts.
      * @return The game countdown message which is going to send to the players.
      */
-    public @NonNull String getStartingCountdownMessage(int countdown) {
+    @Override
+    public @NonNull String getCountdownMessage(int currentCountdown) {
         return "The game is starting in §c" + countdown + (countdown == 1 ? " second§7." : " seconds§7.");
+    }
+
+    @Override
+    public void playCountdownSound(@NonNull Player player) {
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
     }
 }

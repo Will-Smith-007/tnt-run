@@ -5,12 +5,13 @@ import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
 
-public final class ProtectionCountdownScheduler implements IScheduler {
+public final class ProtectionCountdownScheduler implements IScheduler, ICountdownOptions {
 
     private int taskID, countdown;
     private boolean isRunning;
@@ -43,9 +44,10 @@ public final class ProtectionCountdownScheduler implements IScheduler {
                 return;
             }
 
-            onlinePlayers.forEach(player ->
-                    player.sendPlainMessage(Message.PREFIX + "Protection ends in §c" + countdown +
-                            (countdown == 1 ? " second§7." : " seconds§7.")));
+            onlinePlayers.forEach(player -> {
+                    player.sendPlainMessage(Message.PREFIX + getCountdownMessage(countdown));
+                    playCountdownSound(player);
+            });
 
             countdown--;
         }, 0L, 20L);
@@ -62,5 +64,21 @@ public final class ProtectionCountdownScheduler implements IScheduler {
     @Override
     public boolean isRunning() {
         return isRunning;
+    }
+
+    /**
+     * Gets the message of the current countdown.
+     *
+     * @param currentCountdown The current countdown until the game starts.
+     * @return The game countdown message which is going to send to the players.
+     */
+    @Override
+    public @NonNull String getCountdownMessage(int currentCountdown) {
+        return "Protection ends in §c" + countdown + (countdown == 1 ? " second§7." : " seconds§7.");
+    }
+
+    @Override
+    public void playCountdownSound(@NonNull Player player) {
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
     }
 }
