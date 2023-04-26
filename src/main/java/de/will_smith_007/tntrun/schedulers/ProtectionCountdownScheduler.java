@@ -2,6 +2,8 @@ package de.will_smith_007.tntrun.schedulers;
 
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.enums.Message;
+import de.will_smith_007.tntrun.schedulers.interfaces.ICountdownOptions;
+import de.will_smith_007.tntrun.schedulers.interfaces.IScheduler;
 import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
 import org.bukkit.Bukkit;

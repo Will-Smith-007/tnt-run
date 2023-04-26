@@ -1,4 +1,4 @@
-package de.will_smith_007.tntrun.schedulers;
+package de.will_smith_007.tntrun.schedulers.interfaces;
 
 import lombok.NonNull;
 import org.bukkit.entity.Player;
