@@ -3,6 +3,7 @@ package de.will_smith_007.tntrun.schedulers;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.enums.GameState;
+import de.will_smith_007.tntrun.schedulers.interfaces.IScheduler;
 import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
