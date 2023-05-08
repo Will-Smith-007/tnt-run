@@ -1,10 +1,12 @@
 package de.will_smith_007.tntrun.utilities;
 
+import com.google.inject.Singleton;
 import lombok.Cleanup;
 
 import java.io.*;
 import java.util.concurrent.CompletableFuture;
 
+@Singleton
 public class ObjectSerializer {
 
     /**

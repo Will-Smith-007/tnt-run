@@ -1,5 +1,6 @@
 package de.will_smith_007.tntrun.commands;
 
+import com.google.inject.Inject;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.managers.StatsManager;
 import lombok.NonNull;
@@ -14,12 +15,13 @@ import java.util.concurrent.TimeUnit;
 
 public class StatsCommand implements CommandExecutor {
 
-    private final StatsManager STATS_MANAGER;
-    private final boolean IS_DATABASE_ENABLED;
+    private final StatsManager statsManager;
+    private final boolean isDatabaseEnabled;
 
+    @Inject
     public StatsCommand(@NonNull StatsManager statsManager) {
-        this.STATS_MANAGER = statsManager;
-        this.IS_DATABASE_ENABLED = statsManager.isDATABASE_ENABLED();
+        this.statsManager = statsManager;
+        this.isDatabaseEnabled = statsManager.isDatabaseEnabled();
     }
 
     @Override
@@ -29,7 +31,7 @@ public class StatsCommand implements CommandExecutor {
             return true;
         }
 
-        if (!IS_DATABASE_ENABLED) {
+        if (!isDatabaseEnabled) {
             player.sendPlainMessage(Message.PREFIX + "§cThe statistics system is currently disabled by the server admin.");
             return true;
         }
@@ -41,7 +43,7 @@ public class StatsCommand implements CommandExecutor {
 
         final UUID playerUUID = player.getUniqueId();
 
-        STATS_MANAGER.getGameStatisticsAsync(playerUUID).thenAccept(gameStatistics -> {
+        statsManager.getGameStatisticsAsync(playerUUID).thenAccept(gameStatistics -> {
             if (gameStatistics == null) {
                 player.sendPlainMessage(Message.PREFIX + "§cYou don't have played this game before.");
                 return;
@@ -53,7 +55,7 @@ public class StatsCommand implements CommandExecutor {
                     Message.PREFIX + "§eYour loses: §7" + gameStatistics.playerGameLoses(),
                     Message.PREFIX + "§eLongest survived time: §7" + getTimerFormat(gameStatistics.longestSurvivedTime()));
 
-            final int currentRanking = STATS_MANAGER.getPlayerRanking(playerUUID);
+            final int currentRanking = statsManager.getPlayerRanking(playerUUID);
 
             player.sendPlainMessage(Message.PREFIX + "§eYour ranking: §7" + currentRanking);
         });

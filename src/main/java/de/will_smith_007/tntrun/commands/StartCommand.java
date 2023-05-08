@@ -1,9 +1,10 @@
 package de.will_smith_007.tntrun.commands;
 
+import com.google.inject.Inject;
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.enums.Message;
-import de.will_smith_007.tntrun.utilities.GameAssets;
 import de.will_smith_007.tntrun.managers.GameManager;
+import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -12,13 +13,14 @@ import org.jetbrains.annotations.NotNull;
 
 public class StartCommand implements CommandExecutor {
 
-    private final GameAssets GAME_ASSETS;
-    private final GameManager GAME_MANAGER;
+    private final GameAssets gameAssets;
+    private final GameManager gameManager;
 
+    @Inject
     public StartCommand(@NonNull GameAssets gameAssets,
                         @NonNull GameManager gameManager) {
-        this.GAME_ASSETS = gameAssets;
-        this.GAME_MANAGER = gameManager;
+        this.gameAssets = gameAssets;
+        this.gameManager = gameManager;
     }
 
     @Override
@@ -33,14 +35,14 @@ public class StartCommand implements CommandExecutor {
             return true;
         }
 
-        final GameState gameState = GAME_ASSETS.getGameState();
+        final GameState gameState = gameAssets.getGameState();
 
         if (gameState != GameState.LOBBY) {
             sender.sendPlainMessage(Message.PREFIX + "§cThis command can only be used in the§e lobby phase§c of the game.");
             return true;
         }
 
-        if (!GAME_MANAGER.shortenCountdownIfEnoughPlayers()) {
+        if (!gameManager.shortenCountdownIfEnoughPlayers()) {
             sender.sendPlainMessage(Message.PREFIX + "§cThe countdown couldn't be shorten because there aren't enough " +
                     "players to start or the countdown is already running at less than 10 seconds.");
             return true;

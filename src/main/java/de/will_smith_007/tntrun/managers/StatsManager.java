@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.managers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.game_stats.GameStatistics;
 import de.will_smith_007.tntrun.mysql.MySQL;
 import lombok.Getter;
@@ -17,16 +19,22 @@ import java.util.concurrent.CompletableFuture;
  *
  * @apiNote Only works on MySQL and MariaDB databases.
  */
+@Singleton
 public class StatsManager {
 
     @Getter
-    private final boolean DATABASE_ENABLED;
-    private final MySQL STATS_SQL;
+    private final boolean databaseEnabled;
+    private final MySQL statsSQL;
 
+    @Inject
     public StatsManager(@NonNull DatabaseFileManager databaseFileManager,
-                        MySQL statsSQL) {
-        this.STATS_SQL = statsSQL;
-        this.DATABASE_ENABLED = databaseFileManager.isDatabaseEnabled();
+                        @NonNull MySQL statsSQL) {
+        this.statsSQL = statsSQL;
+        this.databaseEnabled = databaseFileManager.isDatabaseEnabled();
+
+        if (databaseEnabled)
+            statsSQL.update("CREATE TABLE IF NOT EXISTS tntrun(uuid VARCHAR(64) PRIMARY KEY, " +
+                    "wins INT(11) DEFAULT 0, loses INT(11) DEFAULT 0, longestSurvivedTime BIGINT(20) DEFAULT 0);");
     }
 
     /**
@@ -36,8 +44,8 @@ public class StatsManager {
      * @param playerUUID The UUID of the player to which the win should be added.
      */
     public void addGameWinAsync(@NonNull UUID playerUUID) {
-        if (!DATABASE_ENABLED) return;
-        STATS_SQL.preparedStatementAsync("INSERT INTO tntrun(uuid, wins) VALUES (?, ?) ON DUPLICATE KEY " +
+        if (!databaseEnabled) return;
+        statsSQL.preparedStatementAsync("INSERT INTO tntrun(uuid, wins) VALUES (?, ?) ON DUPLICATE KEY " +
                 "UPDATE wins= wins + 1;").thenAccept(preparedStatement -> {
             try {
                 preparedStatement.setString(1, playerUUID.toString());
@@ -57,8 +65,8 @@ public class StatsManager {
      * @param playerUUID The UUID of the player to which the loss should be added.
      */
     public void addGameLoseAsync(@NonNull UUID playerUUID) {
-        if (!DATABASE_ENABLED) return;
-        STATS_SQL.preparedStatementAsync("INSERT INTO tntrun(uuid, loses) VALUES (?, ?) ON DUPLICATE KEY " +
+        if (!databaseEnabled) return;
+        statsSQL.preparedStatementAsync("INSERT INTO tntrun(uuid, loses) VALUES (?, ?) ON DUPLICATE KEY " +
                 "UPDATE loses= loses + 1;").thenAccept(preparedStatement -> {
             try {
                 preparedStatement.setString(1, playerUUID.toString());
@@ -82,8 +90,8 @@ public class StatsManager {
      * @param survivedTimeMillis The survived milliseconds from the previous played game.
      */
     public void updateLongestSurvivedTimeAsync(@NonNull UUID playerUUID, long survivedTimeMillis) {
-        if (!DATABASE_ENABLED) return;
-        STATS_SQL.preparedStatementAsync("INSERT INTO tntrun(uuid, longestSurvivedTime) VALUES (?, ?) ON " +
+        if (!databaseEnabled) return;
+        statsSQL.preparedStatementAsync("INSERT INTO tntrun(uuid, longestSurvivedTime) VALUES (?, ?) ON " +
                         "DUPLICATE KEY UPDATE longestSurvivedTime= IF(longestSurvivedTime < ?, ?, longestSurvivedTime);")
                 .thenAccept(preparedStatement -> {
                     try {
@@ -107,8 +115,8 @@ public class StatsManager {
      * Returns null if the database is disabled or the specified {@link UUID} hasn't played the game before.
      */
     public CompletableFuture<GameStatistics> getGameStatisticsAsync(@NonNull UUID playerUUID) {
-        if (!DATABASE_ENABLED) return null;
-        return STATS_SQL.preparedStatementAsync("SELECT * FROM tntrun WHERE uuid= ?")
+        if (!databaseEnabled) return null;
+        return statsSQL.preparedStatementAsync("SELECT * FROM tntrun WHERE uuid= ?")
                 .thenApply(preparedStatement -> {
                     try {
                         preparedStatement.setString(1, playerUUID.toString());
@@ -141,8 +149,8 @@ public class StatsManager {
      * played the game before.
      */
     public CompletableFuture<Integer> getPlayerRankingAsync(@NonNull UUID playerUUID) {
-        if (!DATABASE_ENABLED) return CompletableFuture.supplyAsync(() -> 0);
-        return STATS_SQL.preparedStatementAsync("SELECT uuid FROM tntrun ORDER BY wins DESC").thenApply(preparedStatement -> {
+        if (!databaseEnabled) return CompletableFuture.supplyAsync(() -> 0);
+        return statsSQL.preparedStatementAsync("SELECT uuid FROM tntrun ORDER BY wins DESC").thenApply(preparedStatement -> {
             try {
                 final ArrayList<String> playerUUIDs = new ArrayList<>();
                 final ResultSet resultSet = preparedStatement.executeQuery();
@@ -171,8 +179,8 @@ public class StatsManager {
      * @apiNote Is only used in asynchronously threads.
      */
     public int getPlayerRanking(@NonNull UUID playerUUID) {
-        if (!DATABASE_ENABLED) return 0;
-        final PreparedStatement preparedStatement = STATS_SQL.preparedStatement(
+        if (!databaseEnabled) return 0;
+        final PreparedStatement preparedStatement = statsSQL.preparedStatement(
                 "SELECT uuid FROM tntrun ORDER BY wins DESC");
         try {
             final ArrayList<String> playerUUIDs = new ArrayList<>();

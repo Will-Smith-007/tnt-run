@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.listeners;
 
+import com.google.inject.Inject;
+import de.will_smith_007.tntrun.commands.TNTRunCommand;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.managers.MapManager;
 import lombok.NonNull;
@@ -18,25 +20,26 @@ import java.util.List;
 
 public class PlayerSetupDeathHeightListener implements Listener {
 
-    private final HashSet<Player> PLAYERS_IN_DEATH_HEIGHT_SETUP;
-    private final MapManager MAP_MANAGER;
+    private final HashSet<Player> playerInDeathHeightSetup;
+    private final MapManager mapManager;
 
-    public PlayerSetupDeathHeightListener(@NonNull HashSet<Player> playersInDeathHeightSetup,
+    @Inject
+    public PlayerSetupDeathHeightListener(@NonNull TNTRunCommand tntRunCommand,
                                           @NonNull MapManager mapManager) {
-        this.PLAYERS_IN_DEATH_HEIGHT_SETUP = playersInDeathHeightSetup;
-        this.MAP_MANAGER = mapManager;
+        this.playerInDeathHeightSetup = tntRunCommand.getPlayersInDeathHeightSetup();
+        this.mapManager = mapManager;
     }
 
     @EventHandler
     public void onBlockClick(@NonNull PlayerInteractEvent playerInteractEvent) {
         final Player player = playerInteractEvent.getPlayer();
 
-        if (!PLAYERS_IN_DEATH_HEIGHT_SETUP.contains(player)) return;
+        if (!playerInDeathHeightSetup.contains(player)) return;
         if (playerInteractEvent.getAction() != Action.LEFT_CLICK_BLOCK) return;
 
         final World world = player.getWorld();
         final String mapName = world.getName();
-        final List<String> gameMapNames = MAP_MANAGER.getMapList();
+        final List<String> gameMapNames = mapManager.getMapList();
 
         if (!gameMapNames.contains(mapName)) {
             player.sendPlainMessage(Message.PREFIX + "§cThe map were you are isn't a configured game map.");
@@ -56,12 +59,12 @@ public class PlayerSetupDeathHeightListener implements Listener {
         final Location clickedBlockLocation = clickedBlock.getLocation();
         final int clickedBlockHeight = clickedBlockLocation.getBlockY();
 
-        MAP_MANAGER.setDeathHeight(mapName, clickedBlockHeight);
+        mapManager.setDeathHeight(mapName, clickedBlockHeight);
 
         player.sendPlainMessage(Message.PREFIX + "§aYou've successfully set the death height for the game map §e" +
                 "\"" + mapName + "\"§a to §e" + clickedBlockHeight);
 
-        PLAYERS_IN_DEATH_HEIGHT_SETUP.remove(player);
+        playerInDeathHeightSetup.remove(player);
         playerInteractEvent.setCancelled(true);
     }
 }

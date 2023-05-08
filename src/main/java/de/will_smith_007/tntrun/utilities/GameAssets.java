@@ -1,5 +1,6 @@
 package de.will_smith_007.tntrun.utilities;
 
+import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.game_config.GameConfiguration;
 import lombok.AccessLevel;
@@ -16,11 +17,12 @@ import java.util.List;
  */
 @Getter
 @Setter
+@Singleton
 public class GameAssets {
 
     private GameState gameState = GameState.LOBBY;
     private GameConfiguration gameConfiguration = null;
-    private final List<Player> ONLINE_PLAYERS_ALIVE = new ArrayList<>();
+    private final List<Player> onlinePlayersAlive = new ArrayList<>();
     @Setter(AccessLevel.NONE)
-    private final List<Material> REMOVING_GAME_MATERIALS = List.of(Material.SAND, Material.RED_SAND, Material.GRAVEL);
+    private final List<Material> removingGameMaterials = List.of(Material.SAND, Material.RED_SAND, Material.GRAVEL);
 }

@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.schedulers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
@@ -16,19 +18,21 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Collection;
 import java.util.List;
 
+@Singleton
 public final class PlayerAFKRemoverScheduler implements IScheduler {
 
     private int taskID;
     private boolean isRunning;
-    private final JavaPlugin JAVA_PLUGIN;
-    private final GameAssets GAME_ASSETS;
-    private final List<Material> REMOVING_GAME_MATERIALS;
+    private final JavaPlugin javaPlugin;
+    private final GameAssets gameAssets;
+    private final List<Material> removingGameMaterials;
 
+    @Inject
     public PlayerAFKRemoverScheduler(@NonNull JavaPlugin javaPlugin,
                                      @NonNull GameAssets gameAssets) {
-        this.JAVA_PLUGIN = javaPlugin;
-        this.GAME_ASSETS = gameAssets;
-        this.REMOVING_GAME_MATERIALS = gameAssets.getREMOVING_GAME_MATERIALS();
+        this.javaPlugin = javaPlugin;
+        this.gameAssets = gameAssets;
+        this.removingGameMaterials = gameAssets.getRemovingGameMaterials();
     }
 
     @Override
@@ -36,8 +40,8 @@ public final class PlayerAFKRemoverScheduler implements IScheduler {
         if (isRunning) return;
 
         isRunning = true;
-        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
-            final GameState gameState = GAME_ASSETS.getGameState();
+        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(javaPlugin, () -> {
+            final GameState gameState = gameAssets.getGameState();
 
             if (gameState == GameState.ENDING) {
                 stop();
@@ -62,7 +66,7 @@ public final class PlayerAFKRemoverScheduler implements IScheduler {
                 final Block blockBelowPlayer = playerLocation.getBlock().getRelative(BlockFace.DOWN);
                 final Block blockBelowRemovingBlock = blockBelowPlayer.getRelative(BlockFace.DOWN);
 
-                if (!REMOVING_GAME_MATERIALS.contains(blockBelowPlayer.getType())) continue;
+                if (!removingGameMaterials.contains(blockBelowPlayer.getType())) continue;
 
                 blockBelowPlayer.setType(Material.AIR);
                 blockBelowRemovingBlock.setType(Material.AIR);

@@ -1,5 +1,6 @@
 package de.will_smith_007.tntrun.listeners;
 
+import com.google.inject.Inject;
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.game_config.GameConfiguration;
@@ -27,35 +28,36 @@ import java.util.concurrent.TimeUnit;
 
 public class PlayerMoveListener implements Listener {
 
-    private final JavaPlugin JAVA_PLUGIN;
-    private final GameAssets GAME_ASSETS;
-    private final EndingCountdownScheduler ENDING_COUNTDOWN_SCHEDULER;
-    private final StatsManager STATS_MANAGER;
-    private final BukkitScheduler BUKKIT_SCHEDULER = Bukkit.getScheduler();
-    private final List<Material> REMOVING_GAME_MATERIALS;
+    private final JavaPlugin javaPlugin;
+    private final GameAssets gameAssets;
+    private final EndingCountdownScheduler endingCountdownScheduler;
+    private final StatsManager statsManager;
+    private final BukkitScheduler bukkitScheduler = Bukkit.getScheduler();
+    private final List<Material> removingGameMaterials;
 
+    @Inject
     public PlayerMoveListener(@NonNull JavaPlugin javaPlugin,
                               @NonNull GameAssets gameAssets,
                               @NonNull EndingCountdownScheduler endingCountdownScheduler,
                               @NonNull StatsManager statsManager) {
-        this.JAVA_PLUGIN = javaPlugin;
-        this.GAME_ASSETS = gameAssets;
-        this.REMOVING_GAME_MATERIALS = gameAssets.getREMOVING_GAME_MATERIALS();
-        this.ENDING_COUNTDOWN_SCHEDULER = endingCountdownScheduler;
-        this.STATS_MANAGER = statsManager;
+        this.javaPlugin = javaPlugin;
+        this.gameAssets = gameAssets;
+        this.removingGameMaterials = gameAssets.getRemovingGameMaterials();
+        this.endingCountdownScheduler = endingCountdownScheduler;
+        this.statsManager = statsManager;
     }
 
     @EventHandler
     public void onPlayerMove(@NonNull PlayerMoveEvent playerMoveEvent) {
         final Player player = playerMoveEvent.getPlayer();
 
-        if (GAME_ASSETS.getGameState() != GameState.INGAME) return;
+        if (gameAssets.getGameState() != GameState.INGAME) return;
 
-        final List<Player> playersAlive = GAME_ASSETS.getONLINE_PLAYERS_ALIVE();
+        final List<Player> playersAlive = gameAssets.getOnlinePlayersAlive();
 
         if (!playersAlive.contains(player)) return;
 
-        final GameConfiguration gameConfiguration = GAME_ASSETS.getGameConfiguration();
+        final GameConfiguration gameConfiguration = gameAssets.getGameConfiguration();
 
         if (gameConfiguration == null) return;
 
@@ -73,9 +75,9 @@ public class PlayerMoveListener implements Listener {
             final Block blockBelowPlayer = playerLocation.getBlock().getRelative(BlockFace.DOWN);
             final Block blockBelowRemovingBlock = blockBelowPlayer.getRelative(BlockFace.DOWN);
 
-            if (REMOVING_GAME_MATERIALS.contains(blockBelowPlayer.getType())) {
+            if (removingGameMaterials.contains(blockBelowPlayer.getType())) {
                 //Player who is walking shouldn't fell into their own path for this reason a delay is required.
-                BUKKIT_SCHEDULER.runTaskLater(JAVA_PLUGIN, () -> {
+                bukkitScheduler.runTaskLater(javaPlugin, () -> {
                     blockBelowPlayer.setType(Material.AIR);
                     blockBelowRemovingBlock.setType(Material.AIR);
                 }, 1L);
@@ -104,27 +106,27 @@ public class PlayerMoveListener implements Listener {
             player.sendPlainMessage(Message.PREFIX + "§aYou've survived §e" + getTimerFormat(differenceTimeMillis));
 
             //The eliminated player gets a loss and the survived time milliseconds is updating if it's higher than before.
-            if (STATS_MANAGER.isDATABASE_ENABLED()) {
+            if (statsManager.isDatabaseEnabled()) {
                 final UUID playerUUID = player.getUniqueId();
-                STATS_MANAGER.addGameLoseAsync(playerUUID);
-                STATS_MANAGER.updateLongestSurvivedTimeAsync(playerUUID, differenceTimeMillis);
+                statsManager.addGameLoseAsync(playerUUID);
+                statsManager.updateLongestSurvivedTimeAsync(playerUUID, differenceTimeMillis);
             }
 
             //If there's only one player left or alive in this game, the winner receives a win and the game ends.
             if (playersAlive.size() == 1) {
-                GAME_ASSETS.setGameState(GameState.ENDING);
+                gameAssets.setGameState(GameState.ENDING);
 
-                if (ENDING_COUNTDOWN_SCHEDULER.isRunning()) return;
-                ENDING_COUNTDOWN_SCHEDULER.start();
+                if (endingCountdownScheduler.isRunning()) return;
+                endingCountdownScheduler.start();
 
                 final Player winnerPlayer = playersAlive.get(0);
                 winnerPlayer.sendPlainMessage(Message.PREFIX + "§aYou've survived §e" + getTimerFormat(differenceTimeMillis));
 
                 //The winner gets a win and the survived time milliseconds is updating if it's higher than before.
-                if (STATS_MANAGER.isDATABASE_ENABLED()) {
+                if (statsManager.isDatabaseEnabled()) {
                     final UUID winnerPlayerUUID = winnerPlayer.getUniqueId();
-                    STATS_MANAGER.addGameWinAsync(winnerPlayerUUID);
-                    STATS_MANAGER.updateLongestSurvivedTimeAsync(winnerPlayerUUID, differenceTimeMillis);
+                    statsManager.addGameWinAsync(winnerPlayerUUID);
+                    statsManager.updateLongestSurvivedTimeAsync(winnerPlayerUUID, differenceTimeMillis);
                 }
             }
         }

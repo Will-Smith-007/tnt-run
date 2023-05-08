@@ -1,11 +1,12 @@
 package de.will_smith_007.tntrun.listeners;
 
+import com.google.inject.Inject;
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.game_config.GameConfiguration;
-import de.will_smith_007.tntrun.utilities.GameAssets;
 import de.will_smith_007.tntrun.managers.GameManager;
 import de.will_smith_007.tntrun.managers.MapManager;
+import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -22,18 +23,19 @@ import org.bukkit.scoreboard.Team;
 
 public class PlayerConnectionListener implements Listener {
 
-    private final GameAssets GAME_ASSETS;
-    private final GameManager GAME_MANAGER;
-    private final MapManager MAP_MANAGER;
+    private final GameAssets gameAssets;
+    private final GameManager gameManager;
+    private final MapManager mapManager;
 
     private Team playerTeam;
 
+    @Inject
     public PlayerConnectionListener(@NonNull GameAssets gameAssets,
                                     @NonNull GameManager gameManager,
                                     @NonNull MapManager mapManager) {
-        this.GAME_ASSETS = gameAssets;
-        this.GAME_MANAGER = gameManager;
-        this.MAP_MANAGER = mapManager;
+        this.gameAssets = gameAssets;
+        this.gameManager = gameManager;
+        this.mapManager = mapManager;
 
         final Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         if ((playerTeam = mainScoreboard.getTeam("players")) == null) {
@@ -49,29 +51,29 @@ public class PlayerConnectionListener implements Listener {
 
         playerTeam.addEntry(player.getName());
 
-        if (GAME_ASSETS.getGameState() == GameState.LOBBY) {
+        if (gameAssets.getGameState() == GameState.LOBBY) {
             player.setGameMode(GameMode.ADVENTURE);
 
             playerJoinEvent.joinMessage(Component.text(
                     Message.PREFIX + "§e" + player.getName() + " §7joined the game!"
             ));
 
-            final String waitingMapName = MAP_MANAGER.getWaitingMapName();
+            final String waitingMapName = mapManager.getWaitingMapName();
 
             if (waitingMapName == null) return;
 
-            final Location waitingMapSpawn = MAP_MANAGER.getMapSpawnPoint(waitingMapName);
+            final Location waitingMapSpawn = mapManager.getMapSpawnPoint(waitingMapName);
 
             if (waitingMapSpawn == null) return;
 
             player.teleport(waitingMapSpawn);
 
-            GAME_MANAGER.startCountdownIfEnoughPlayers();
+            gameManager.startCountdownIfEnoughPlayers();
         } else {
             playerJoinEvent.joinMessage(null);
             player.setGameMode(GameMode.SPECTATOR);
 
-            final GameConfiguration gameConfiguration = GAME_ASSETS.getGameConfiguration();
+            final GameConfiguration gameConfiguration = gameAssets.getGameConfiguration();
             final Location gameSpawnLocation = gameConfiguration.gameSpawnLocation();
 
             player.teleport(gameSpawnLocation);
@@ -82,7 +84,7 @@ public class PlayerConnectionListener implements Listener {
     public void onPlayerQuit(@NonNull PlayerQuitEvent playerQuitEvent) {
         final Player player = playerQuitEvent.getPlayer();
 
-        final GameState currentGameState = GAME_ASSETS.getGameState();
+        final GameState currentGameState = gameAssets.getGameState();
 
         switch (currentGameState) {
             case LOBBY -> {
@@ -90,11 +92,11 @@ public class PlayerConnectionListener implements Listener {
                         Message.PREFIX + "§e" + player.getName() + " §7left the game."
                 ));
                 //This event is called before player removing from the online player collection.
-                GAME_MANAGER.cancelCountdownIfNotEnoughPlayers((Bukkit.getOnlinePlayers().size() - 1));
+                gameManager.cancelCountdownIfNotEnoughPlayers((Bukkit.getOnlinePlayers().size() - 1));
             }
             case INGAME, PROTECTION -> {
                 playerQuitEvent.quitMessage(null);
-                GAME_ASSETS.getONLINE_PLAYERS_ALIVE().remove(player);
+                gameAssets.getOnlinePlayersAlive().remove(player);
             }
             case ENDING -> playerQuitEvent.quitMessage(null);
         }

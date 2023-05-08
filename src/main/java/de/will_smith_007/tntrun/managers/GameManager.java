@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.managers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.schedulers.LobbyCountdownScheduler;
 import lombok.NonNull;
@@ -12,12 +14,14 @@ import java.util.Collection;
  * Manages some game mechanics automatically such as starting or stopping the start countdown if there are or aren't
  * enough players to start.
  */
+@Singleton
 public class GameManager {
 
-    private final LobbyCountdownScheduler LOBBY_COUNTDOWN_SCHEDULER;
+    private final LobbyCountdownScheduler lobbyCountdownScheduler;
 
+    @Inject
     public GameManager(@NonNull LobbyCountdownScheduler lobbyCountdownScheduler) {
-        this.LOBBY_COUNTDOWN_SCHEDULER = lobbyCountdownScheduler;
+        this.lobbyCountdownScheduler = lobbyCountdownScheduler;
     }
 
     /**
@@ -25,10 +29,10 @@ public class GameManager {
      * <br> The game requires a minimum of two players.
      */
     public void startCountdownIfEnoughPlayers() {
-        if (LOBBY_COUNTDOWN_SCHEDULER.isRunning()) return;
+        if (lobbyCountdownScheduler.isRunning()) return;
         final Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
         if (onlinePlayers.size() < 2) return;
-        LOBBY_COUNTDOWN_SCHEDULER.start();
+        lobbyCountdownScheduler.start();
     }
 
     /**
@@ -37,10 +41,10 @@ public class GameManager {
      * @return True if the countdown was successfully shortened.
      */
     public boolean shortenCountdownIfEnoughPlayers() {
-        if (!LOBBY_COUNTDOWN_SCHEDULER.isRunning()) return false;
-        final int currentCountdown = LOBBY_COUNTDOWN_SCHEDULER.getCountdown();
+        if (!lobbyCountdownScheduler.isRunning()) return false;
+        final int currentCountdown = lobbyCountdownScheduler.getCountdown();
         if (currentCountdown <= 10) return false;
-        LOBBY_COUNTDOWN_SCHEDULER.setCountdown(10);
+        lobbyCountdownScheduler.setCountdown(10);
         return true;
     }
 
@@ -51,7 +55,7 @@ public class GameManager {
      * @param players Amount of current players on the game server.
      */
     public void cancelCountdownIfNotEnoughPlayers(int players) {
-        if (!LOBBY_COUNTDOWN_SCHEDULER.isRunning()) return;
+        if (!lobbyCountdownScheduler.isRunning()) return;
 
         final Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
 
@@ -61,7 +65,7 @@ public class GameManager {
                         "a minimum of §e2 players §cto start.");
                 player.setLevel(0);
             });
-            LOBBY_COUNTDOWN_SCHEDULER.stop();
+            lobbyCountdownScheduler.stop();
         }
     }
 }

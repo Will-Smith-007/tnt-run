@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.managers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,11 +20,12 @@ import java.util.logging.Logger;
  * These data is e.g. the spawn locations for game maps and the waiting lobby map and a general list of game maps.
  * Also holds the name of the configured waiting lobby map.
  */
+@Singleton
 public class MapManager {
 
-    private final Logger LOGGER;
-    private final File MAP_CONFIG;
-    private final YamlConfiguration YAML_CONFIGURATION;
+    private final Logger logger;
+    private final File mapConfig;
+    private final YamlConfiguration yamlConfiguration;
 
     /**
      * Creates the "MapConfig.yml" file in the directory of this plugin.
@@ -30,28 +33,29 @@ public class MapManager {
      * @param javaPlugin Java plugin which contains required information such as the directory path of
      *                   this plugin or the configured {@link Logger}
      */
+    @Inject
     public MapManager(@NonNull JavaPlugin javaPlugin) {
-        this.LOGGER = javaPlugin.getLogger();
+        this.logger = javaPlugin.getLogger();
 
         final File mapConfigDirectory = new File(javaPlugin.getDataFolder().getPath());
         final String configName = "MapConfig.yml";
-        this.MAP_CONFIG = new File(mapConfigDirectory + "/" + configName);
+        this.mapConfig = new File(mapConfigDirectory + "/" + configName);
 
         if (mapConfigDirectory.mkdirs()) {
-            LOGGER.info("World configuration directory was created.");
+            logger.info("World configuration directory was created.");
         }
 
-        if (!MAP_CONFIG.exists()) {
+        if (!mapConfig.exists()) {
             try {
-                if (MAP_CONFIG.createNewFile()) {
-                    LOGGER.info("World configuration file was created.");
+                if (mapConfig.createNewFile()) {
+                    logger.info("World configuration file was created.");
                 }
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
 
-        YAML_CONFIGURATION = YamlConfiguration.loadConfiguration(MAP_CONFIG);
+        yamlConfiguration = YamlConfiguration.loadConfiguration(mapConfig);
     }
 
     /**
@@ -60,7 +64,7 @@ public class MapManager {
      * @return The list of configured game maps. Is empty if there isn't any configured game map yet.
      */
     public @NonNull List<String> getMapList() {
-        return YAML_CONFIGURATION.getStringList("Maps");
+        return yamlConfiguration.getStringList("Maps");
     }
 
     /**
@@ -70,7 +74,7 @@ public class MapManager {
      * Returns null if there isn't a configured lobby map.
      */
     public String getWaitingMapName() {
-        return YAML_CONFIGURATION.getString("WaitingMap");
+        return yamlConfiguration.getString("WaitingMap");
     }
 
     /**
@@ -96,11 +100,11 @@ public class MapManager {
 
         if (world == null) return null;
 
-        final double x = YAML_CONFIGURATION.getInt(mapName + ".X");
-        final double y = YAML_CONFIGURATION.getInt(mapName + ".Y");
-        final double z = YAML_CONFIGURATION.getInt(mapName + ".Z");
-        final float yaw = (float) YAML_CONFIGURATION.getDouble(mapName + ".Yaw");
-        final float pitch = (float) YAML_CONFIGURATION.getDouble(mapName + ".Pitch");
+        final double x = yamlConfiguration.getInt(mapName + ".X");
+        final double y = yamlConfiguration.getInt(mapName + ".Y");
+        final double z = yamlConfiguration.getInt(mapName + ".Z");
+        final float yaw = (float) yamlConfiguration.getDouble(mapName + ".Yaw");
+        final float pitch = (float) yamlConfiguration.getDouble(mapName + ".Pitch");
 
         return new Location(world, x, y, z, yaw, pitch);
     }
@@ -113,7 +117,7 @@ public class MapManager {
      * Returns 0 if there couldn't be found a valid death height configuration for this map.
      */
     public int getDeathHeight(@NonNull String mapName) {
-        return YAML_CONFIGURATION.getInt(mapName + ".DeathHeight");
+        return yamlConfiguration.getInt(mapName + ".DeathHeight");
     }
 
     /**
@@ -127,11 +131,11 @@ public class MapManager {
         if (mapList.contains(mapName)) return;
         mapList.add(mapName);
 
-        YAML_CONFIGURATION.set("Maps", mapList);
+        yamlConfiguration.set("Maps", mapList);
 
         saveMapConfiguration();
 
-        LOGGER.info("The map named " + mapName + " was added.");
+        logger.info("The map named " + mapName + " was added.");
     }
 
     /**
@@ -145,11 +149,11 @@ public class MapManager {
         if (!mapList.contains(mapName)) return;
         mapList.remove(mapName);
 
-        YAML_CONFIGURATION.set("Maps", mapList);
+        yamlConfiguration.set("Maps", mapList);
 
         saveMapConfiguration();
 
-        LOGGER.info("The map named " + mapName + " was removed.");
+        logger.info("The map named " + mapName + " was removed.");
     }
 
     /**
@@ -158,11 +162,11 @@ public class MapManager {
      * @param mapName Name of waiting lobby map which should be set.
      */
     public void setWaitingMap(@NonNull String mapName) {
-        YAML_CONFIGURATION.set("WaitingMap", mapName);
+        yamlConfiguration.set("WaitingMap", mapName);
 
         saveMapConfiguration();
 
-        LOGGER.info("Waiting map was set to " + mapName);
+        logger.info("Waiting map was set to " + mapName);
     }
 
     /**
@@ -172,15 +176,15 @@ public class MapManager {
      * @param spawnLocation Location for the map spawn which should be set.
      */
     public void setMapSpawnPoint(@NonNull String mapName, @NonNull Location spawnLocation) {
-        YAML_CONFIGURATION.set(mapName + ".X", spawnLocation.getBlockX());
-        YAML_CONFIGURATION.set(mapName + ".Y", spawnLocation.getBlockY());
-        YAML_CONFIGURATION.set(mapName + ".Z", spawnLocation.getBlockZ());
-        YAML_CONFIGURATION.set(mapName + ".Yaw", spawnLocation.getYaw());
-        YAML_CONFIGURATION.set(mapName + ".Pitch", spawnLocation.getPitch());
+        yamlConfiguration.set(mapName + ".X", spawnLocation.getBlockX());
+        yamlConfiguration.set(mapName + ".Y", spawnLocation.getBlockY());
+        yamlConfiguration.set(mapName + ".Z", spawnLocation.getBlockZ());
+        yamlConfiguration.set(mapName + ".Yaw", spawnLocation.getYaw());
+        yamlConfiguration.set(mapName + ".Pitch", spawnLocation.getPitch());
 
         saveMapConfiguration();
 
-        LOGGER.info("The map spawn point for \"" + mapName + "\" was set.");
+        logger.info("The map spawn point for \"" + mapName + "\" was set.");
     }
 
     /**
@@ -190,11 +194,11 @@ public class MapManager {
      * @param deathHeight Death height of the game map which should be set.
      */
     public void setDeathHeight(@NonNull String mapName, int deathHeight) {
-        YAML_CONFIGURATION.set(mapName + ".DeathHeight", deathHeight);
+        yamlConfiguration.set(mapName + ".DeathHeight", deathHeight);
 
         saveMapConfiguration();
 
-        LOGGER.info("The death height for \"" + mapName + "\" was set to " + deathHeight);
+        logger.info("The death height for \"" + mapName + "\" was set to " + deathHeight);
     }
 
     /**
@@ -202,7 +206,7 @@ public class MapManager {
      */
     private void saveMapConfiguration() {
         try {
-            YAML_CONFIGURATION.save(MAP_CONFIG);
+            yamlConfiguration.save(mapConfig);
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }

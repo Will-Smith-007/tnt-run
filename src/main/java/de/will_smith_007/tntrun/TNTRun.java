@@ -1,22 +1,18 @@
 package de.will_smith_007.tntrun;
 
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import de.will_smith_007.tntrun.commands.StartCommand;
 import de.will_smith_007.tntrun.commands.StatsCommand;
 import de.will_smith_007.tntrun.commands.TNTRunCommand;
+import de.will_smith_007.tntrun.dependency_injection.InjectionModule;
 import de.will_smith_007.tntrun.listeners.CancelListener;
 import de.will_smith_007.tntrun.listeners.PlayerConnectionListener;
 import de.will_smith_007.tntrun.listeners.PlayerMoveListener;
 import de.will_smith_007.tntrun.listeners.PlayerSetupDeathHeightListener;
-import de.will_smith_007.tntrun.managers.DatabaseFileManager;
-import de.will_smith_007.tntrun.managers.GameManager;
 import de.will_smith_007.tntrun.managers.MapManager;
-import de.will_smith_007.tntrun.managers.StatsManager;
 import de.will_smith_007.tntrun.mysql.MySQL;
-import de.will_smith_007.tntrun.schedulers.EndingCountdownScheduler;
-import de.will_smith_007.tntrun.schedulers.LobbyCountdownScheduler;
-import de.will_smith_007.tntrun.schedulers.PlayerAFKRemoverScheduler;
-import de.will_smith_007.tntrun.schedulers.ProtectionCountdownScheduler;
-import de.will_smith_007.tntrun.utilities.GameAssets;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -31,108 +27,35 @@ import java.util.logging.Logger;
 
 public class TNTRun extends JavaPlugin {
 
-    private final Logger LOGGER = getLogger();
+    private final Logger logger = getLogger();
     private MySQL statsSQL;
 
     @Override
     public void onEnable() {
+        final Injector injector = Guice.createInjector(new InjectionModule(this));
 
-        //Dependencies
-        final GameAssets gameAssets = new GameAssets();
-
-        //Injection
-        final MapManager mapManager = new MapManager(this);
-        final DatabaseFileManager databaseFileManager = new DatabaseFileManager(this);
-
-        //Database initialization
-        statsSQL = null;
-        if (databaseFileManager.isDatabaseEnabled()) {
-            statsSQL = new MySQL(
-                    databaseFileManager,
-                    LOGGER
-            );
-
-            statsSQL.update("CREATE TABLE IF NOT EXISTS tntrun(uuid VARCHAR(64) PRIMARY KEY, " +
-                    "wins INT(11) DEFAULT 0, loses INT(11) DEFAULT 0, longestSurvivedTime BIGINT(20) DEFAULT 0);");
-        }
-
-        //Injection
-        final StatsManager statsManager = new StatsManager(
-                databaseFileManager,
-                statsSQL
-        );
-
-        final PlayerAFKRemoverScheduler playerAFKRemoverScheduler = new PlayerAFKRemoverScheduler(
-                this,
-                gameAssets
-        );
-
-        final ProtectionCountdownScheduler protectionCountdownScheduler = new ProtectionCountdownScheduler(
-                this,
-                gameAssets,
-                playerAFKRemoverScheduler
-        );
-
-        final LobbyCountdownScheduler lobbyCountdownScheduler = new LobbyCountdownScheduler(
-                this,
-                gameAssets,
-                mapManager,
-                protectionCountdownScheduler
-        );
-
-        final EndingCountdownScheduler endingCountdownScheduler = new EndingCountdownScheduler(this);
-
-        final GameManager gameManager = new GameManager(lobbyCountdownScheduler);
-
-        //Initializing commands
-        final TNTRunCommand tntRunCommand = new TNTRunCommand(mapManager);
-        final StartCommand startCommand = new StartCommand(gameAssets, gameManager);
-        final StatsCommand statsCommand = new StatsCommand(statsManager);
+        statsSQL = injector.getInstance(MySQL.class);
 
         //Command registration
-        registerCommand("tntrun", tntRunCommand);
-        registerCommand("start", startCommand);
-        registerCommand("stats", statsCommand);
-
-        //Initializing listeners
-        final PlayerConnectionListener playerConnectionListener = new PlayerConnectionListener(
-                gameAssets,
-                gameManager,
-                mapManager
-        );
-
-        final PlayerSetupDeathHeightListener playerSetupDeathHeightListener = new PlayerSetupDeathHeightListener(
-                tntRunCommand.getPLAYERS_IN_DEATH_HEIGHT_SETUP(),
-                mapManager
-        );
-
-        final PlayerMoveListener playerMoveListener = new PlayerMoveListener(
-                this,
-                gameAssets,
-                endingCountdownScheduler,
-                statsManager
-        );
-
-        final CancelListener cancelListener = new CancelListener();
+        registerCommand("tntrun", injector.getInstance(TNTRunCommand.class));
+        registerCommand("start", injector.getInstance(StartCommand.class));
+        registerCommand("stats", injector.getInstance(StatsCommand.class));
 
         //Listener registration
         registerListeners(
-                playerConnectionListener,
-                playerSetupDeathHeightListener,
-                playerMoveListener,
-                cancelListener
+                injector.getInstance(PlayerConnectionListener.class),
+                injector.getInstance(PlayerSetupDeathHeightListener.class),
+                injector.getInstance(PlayerMoveListener.class),
+                new CancelListener()
         );
 
-        //Loads the waiting map
-        loadWaitingMap(mapManager);
-
-        LOGGER.info("TNT-Run was started.");
+        logger.info("TNT-Run was started.");
     }
 
     @Override
     public void onDisable() {
         statsSQL.closeConnection();
-        LOGGER.info("TNT-Run was stopped.");
+        logger.info("TNT-Run was stopped.");
     }
 
     /**
@@ -165,21 +88,22 @@ public class TNTRun extends JavaPlugin {
      *
      * @param mapManager {@link MapManager} to get map information.
      */
+    @Inject
     private void loadWaitingMap(@NonNull MapManager mapManager) {
         //Map information and waiting map loading.
         final String waitingMap = mapManager.getWaitingMapName();
         final List<String> gameMaps = mapManager.getMapList();
 
         if (waitingMap == null) {
-            LOGGER.warning("There is currently no configured waiting map.");
+            logger.warning("There is currently no configured waiting map.");
         } else {
             final World world = mapManager.loadMap(waitingMap);
-            LOGGER.info("The waiting map named \"" + waitingMap + "\" " +
+            logger.info("The waiting map named \"" + waitingMap + "\" " +
                     (world == null ? "couldn't be loaded." : "was successfully loaded."));
         }
 
         if (gameMaps.isEmpty()) {
-            LOGGER.warning("There is currently no configured game map.");
+            logger.warning("There is currently no configured game map.");
         }
     }
 }

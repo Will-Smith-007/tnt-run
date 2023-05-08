@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.schedulers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.enums.Message;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
@@ -9,14 +11,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
 
+@Singleton
 public final class EndingCountdownScheduler implements IScheduler, ICountdownOptions {
 
     private int taskID, countdown;
     private boolean isRunning = false;
-    private final JavaPlugin JAVA_PLUGIN;
+    private final JavaPlugin javaPlugin;
 
+    @Inject
     public EndingCountdownScheduler(@NonNull JavaPlugin javaPlugin) {
-        this.JAVA_PLUGIN = javaPlugin;
+        this.javaPlugin = javaPlugin;
     }
 
     @Override
@@ -25,7 +29,7 @@ public final class EndingCountdownScheduler implements IScheduler, ICountdownOpt
 
         isRunning = true;
         countdown = 10;
-        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
+        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(javaPlugin, () -> {
             switch (countdown) {
                 case 10, 5, 3, 2, 1 -> {
                     final Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();

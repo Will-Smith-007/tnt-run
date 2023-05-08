@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.managers.MapManager;
 import lombok.Getter;
@@ -17,14 +19,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+@Singleton
 public class TNTRunCommand implements TabExecutor {
 
-    private final MapManager MAP_MANAGER;
+    private final MapManager mapManager;
     @Getter
-    private final HashSet<Player> PLAYERS_IN_DEATH_HEIGHT_SETUP = new HashSet<>();
+    private final HashSet<Player> playersInDeathHeightSetup = new HashSet<>();
 
+    @Inject
     public TNTRunCommand(@NonNull MapManager mapManager) {
-        this.MAP_MANAGER = mapManager;
+        this.mapManager = mapManager;
     }
 
     @Override
@@ -46,7 +50,7 @@ public class TNTRunCommand implements TabExecutor {
             } else if (subCommand.equalsIgnoreCase("setGameSpawn")) {
                 final World world = player.getWorld();
                 final String mapName = world.getName();
-                final List<String> gameMapNames = MAP_MANAGER.getMapList();
+                final List<String> gameMapNames = mapManager.getMapList();
 
                 if (!gameMapNames.contains(mapName)) {
                     player.sendPlainMessage(Message.PREFIX + "§cThe map were you are isn't a configured game map.");
@@ -55,14 +59,14 @@ public class TNTRunCommand implements TabExecutor {
 
                 final Location playerLocation = player.getLocation();
 
-                MAP_MANAGER.setMapSpawnPoint(mapName, playerLocation);
+                mapManager.setMapSpawnPoint(mapName, playerLocation);
 
                 player.sendPlainMessage(Message.PREFIX + "§aYou've set the game spawn point for the game map named §e" +
                         "\"" + mapName + "\"");
             } else if (subCommand.equalsIgnoreCase("setWaitSpawn")) {
                 final World world = player.getWorld();
                 final String mapName = world.getName();
-                final String configuredWaitingMapName = MAP_MANAGER.getWaitingMapName();
+                final String configuredWaitingMapName = mapManager.getWaitingMapName();
 
                 if (configuredWaitingMapName == null || !configuredWaitingMapName.equals(mapName)) {
                     player.sendPlainMessage(Message.PREFIX + "§cThe map were you are isn't the configured waiting map.");
@@ -71,18 +75,18 @@ public class TNTRunCommand implements TabExecutor {
 
                 final Location playerLocation = player.getLocation();
 
-                MAP_MANAGER.setMapSpawnPoint(mapName, playerLocation);
+                mapManager.setMapSpawnPoint(mapName, playerLocation);
 
                 player.sendPlainMessage(Message.PREFIX + "§aYou've set the waiting map spawn point for §e\"" +
                         mapName + "\"");
             } else if (subCommand.equalsIgnoreCase("setDeathHeight")) {
-                if (PLAYERS_IN_DEATH_HEIGHT_SETUP.contains(player)) {
-                    PLAYERS_IN_DEATH_HEIGHT_SETUP.remove(player);
+                if (playersInDeathHeightSetup.contains(player)) {
+                    playersInDeathHeightSetup.remove(player);
 
                     player.sendPlainMessage(Message.PREFIX + "§cYou can no longer break a random §eTNT block §c" +
                             "to set the death height.");
                 } else {
-                    PLAYERS_IN_DEATH_HEIGHT_SETUP.add(player);
+                    playersInDeathHeightSetup.add(player);
                     player.sendPlainMessage(Message.PREFIX + "§aYou can now break a random §eTNT block §aon the last " +
                             "level to set the death height for this map.");
                 }
@@ -91,24 +95,24 @@ public class TNTRunCommand implements TabExecutor {
             final String subCommand = args[0];
             final String mapName = args[1];
             if (subCommand.equalsIgnoreCase("addMap")) {
-                MAP_MANAGER.addMap(mapName);
+                mapManager.addMap(mapName);
                 player.sendPlainMessage(Message.PREFIX + "§aYou added the map §e\"" + mapName + "\"§a to the game map pool.");
             } else if (subCommand.equalsIgnoreCase("removeMap")) {
-                MAP_MANAGER.removeMap(mapName);
+                mapManager.removeMap(mapName);
                 player.sendPlainMessage(Message.PREFIX + "§aYou removed the map §e\"" + mapName + "\"§a from the game map pool.");
             } else if (subCommand.equalsIgnoreCase("setWaitMap")) {
-                final World waitingMap = MAP_MANAGER.loadMap(mapName);
+                final World waitingMap = mapManager.loadMap(mapName);
 
                 if (waitingMap == null) {
                     player.sendPlainMessage(Message.PREFIX + "§cThe waiting map named §e\"" + mapName + "\"§c couldn't be found.");
                     return true;
                 }
 
-                MAP_MANAGER.setWaitingMap(mapName);
+                mapManager.setWaitingMap(mapName);
 
                 player.sendPlainMessage(Message.PREFIX + "§aYou've set the waiting map to §e\"" + mapName + "\"");
             } else if (subCommand.equalsIgnoreCase("load")) {
-                final World world = MAP_MANAGER.loadMap(mapName);
+                final World world = mapManager.loadMap(mapName);
 
                 if (world == null) {
                     player.sendPlainMessage(Message.PREFIX + "§cThe map named §e\"" + mapName + "\"§c couldn't be found.");
@@ -117,14 +121,14 @@ public class TNTRunCommand implements TabExecutor {
 
                 player.sendPlainMessage(Message.PREFIX + "§aThe map named §e\"" + mapName + "\"§a was successfully loaded.");
             } else if (subCommand.equalsIgnoreCase("tp")) {
-                final World world = MAP_MANAGER.loadMap(mapName);
+                final World world = mapManager.loadMap(mapName);
 
                 if (world == null) {
                     player.sendPlainMessage(Message.PREFIX + "§cThe map named §e\"" + mapName + "\"§c couldn't be found.");
                     return true;
                 }
 
-                final Location configuredMapLocation = MAP_MANAGER.getMapSpawnPoint(mapName);
+                final Location configuredMapLocation = mapManager.getMapSpawnPoint(mapName);
                 final Location mapSpawnLocation =
                         (configuredMapLocation == null ? world.getSpawnLocation() : configuredMapLocation);
 

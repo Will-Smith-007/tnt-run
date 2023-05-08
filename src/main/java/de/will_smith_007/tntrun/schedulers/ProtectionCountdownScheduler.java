@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.schedulers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.utilities.GameAssets;
@@ -11,20 +13,22 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
 
+@Singleton
 public final class ProtectionCountdownScheduler implements IScheduler, ICountdownOptions {
 
     private int taskID, countdown;
     private boolean isRunning;
-    private final JavaPlugin JAVA_PLUGIN;
-    private final GameAssets GAME_ASSETS;
-    private final PlayerAFKRemoverScheduler PLAYER_AFK_REMOVER_SCHEDULER;
+    private final JavaPlugin javaPlugin;
+    private final GameAssets gameAssets;
+    private final PlayerAFKRemoverScheduler playerAFKRemoverScheduler;
 
+    @Inject
     public ProtectionCountdownScheduler(@NonNull JavaPlugin javaPlugin,
                                         @NonNull GameAssets gameAssets,
                                         @NonNull PlayerAFKRemoverScheduler playerAFKRemoverScheduler) {
-        this.JAVA_PLUGIN = javaPlugin;
-        this.GAME_ASSETS = gameAssets;
-        this.PLAYER_AFK_REMOVER_SCHEDULER = playerAFKRemoverScheduler;
+        this.javaPlugin = javaPlugin;
+        this.gameAssets = gameAssets;
+        this.playerAFKRemoverScheduler = playerAFKRemoverScheduler;
     }
 
     @Override
@@ -33,20 +37,20 @@ public final class ProtectionCountdownScheduler implements IScheduler, ICountdow
 
         countdown = 5;
         isRunning = true;
-        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
+        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(javaPlugin, () -> {
 
             final Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
 
             if (countdown == 0) {
-                GAME_ASSETS.setGameState(GameState.INGAME);
-                PLAYER_AFK_REMOVER_SCHEDULER.start();
+                gameAssets.setGameState(GameState.INGAME);
+                playerAFKRemoverScheduler.start();
                 stop();
                 return;
             }
 
             onlinePlayers.forEach(player -> {
-                    player.sendPlainMessage(Message.PREFIX + getCountdownMessage(countdown));
-                    playCountdownSound(player);
+                player.sendPlainMessage(Message.PREFIX + getCountdownMessage(countdown));
+                playCountdownSound(player);
             });
 
             countdown--;

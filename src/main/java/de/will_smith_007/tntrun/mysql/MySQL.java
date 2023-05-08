@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.mysql;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.will_smith_007.tntrun.managers.DatabaseFileManager;
@@ -18,11 +20,12 @@ import java.util.logging.Logger;
  *
  * @apiNote Uses the MySQL Connection method but works also with MariaDB databases.
  */
+@Singleton
 public class MySQL {
 
-    private final Logger LOGGER;
-    private final String HOST, DATABASE, USERNAME, SECRET;
-    private final int PORT;
+    private final Logger logger;
+    private final String host, database, username, secret;
+    private final int port;
 
     private volatile Connection connection;
     private volatile HikariDataSource hikariDataSource;
@@ -33,15 +36,16 @@ public class MySQL {
      * @param databaseFileManager Database file manager which contains the information about the database file.
      * @param logger              Logger which should be used to log important information.
      */
+    @Inject
     public MySQL(@NonNull DatabaseFileManager databaseFileManager,
                  @NonNull Logger logger) {
-        this.LOGGER = logger;
+        this.logger = logger;
 
-        this.HOST = databaseFileManager.getHostAddress();
-        this.DATABASE = databaseFileManager.getDatabaseName();
-        this.USERNAME = databaseFileManager.getDatabaseUsername();
-        this.SECRET = databaseFileManager.getSecret();
-        this.PORT = databaseFileManager.getPort();
+        this.host = databaseFileManager.getHostAddress();
+        this.database = databaseFileManager.getDatabaseName();
+        this.username = databaseFileManager.getDatabaseUsername();
+        this.secret = databaseFileManager.getSecret();
+        this.port = databaseFileManager.getPort();
 
         if (!databaseFileManager.isDatabaseEnabled()) return;
 
@@ -55,9 +59,9 @@ public class MySQL {
     private void connect() {
         try {
             final HikariConfig hikariConfig = new HikariConfig();
-            hikariConfig.setJdbcUrl("jdbc:mysql://" + HOST + ":" + PORT + "/" + DATABASE);
-            hikariConfig.setUsername(USERNAME);
-            hikariConfig.setPassword(SECRET);
+            hikariConfig.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database);
+            hikariConfig.setUsername(username);
+            hikariConfig.setPassword(secret);
 
             hikariConfig.setConnectionTestQuery("SELECT 1");
 
@@ -68,14 +72,14 @@ public class MySQL {
             hikariConfig.addDataSourceProperty("useUnicode", "true");
             hikariConfig.addDataSourceProperty("maxIdleTime", 28800);
 
-            hikariConfig.setPoolName(DATABASE);
+            hikariConfig.setPoolName(database);
             hikariConfig.setMaximumPoolSize(2);
             hikariConfig.setMinimumIdle(5);
 
             hikariDataSource = new HikariDataSource(hikariConfig);
             connection = hikariDataSource.getConnection();
 
-            LOGGER.info("Connection to the database was successfully established!");
+            logger.info("Connection to the database was successfully established!");
         } catch (SQLException | NullPointerException exception) {
             exception.printStackTrace();
         }
@@ -88,7 +92,7 @@ public class MySQL {
     public void closeConnection() {
         if (connection == null) return;
         hikariDataSource.close();
-        LOGGER.info("Database connection was closed.");
+        logger.info("Database connection was closed.");
     }
 
     /**

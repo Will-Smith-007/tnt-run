@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.schedulers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import de.will_smith_007.tntrun.enums.GameState;
 import de.will_smith_007.tntrun.enums.Message;
 import de.will_smith_007.tntrun.game_config.GameConfiguration;
@@ -17,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+@Singleton
 public final class LobbyCountdownScheduler implements IScheduler, ICountdownOptions {
 
     private int taskID;
@@ -24,21 +27,22 @@ public final class LobbyCountdownScheduler implements IScheduler, ICountdownOpti
     @Getter
     private int countdown;
     private boolean isRunning = false;
-    private final JavaPlugin JAVA_PLUGIN;
-    private final Logger LOGGER;
-    private final GameAssets GAME_ASSETS;
-    private final MapManager MAP_MANAGER;
-    private final ProtectionCountdownScheduler PROTECTION_COUNTDOWN_SCHEDULER;
+    private final JavaPlugin javaPlugin;
+    private final Logger logger;
+    private final GameAssets gameAssets;
+    private final MapManager mapManager;
+    private final ProtectionCountdownScheduler protectionCountdownScheduler;
 
+    @Inject
     public LobbyCountdownScheduler(@NonNull JavaPlugin javaPlugin,
                                    @NonNull GameAssets gameAssets,
                                    @NonNull MapManager mapManager,
                                    @NonNull ProtectionCountdownScheduler protectionCountdownScheduler) {
-        this.JAVA_PLUGIN = javaPlugin;
-        this.LOGGER = javaPlugin.getLogger();
-        this.GAME_ASSETS = gameAssets;
-        this.MAP_MANAGER = mapManager;
-        this.PROTECTION_COUNTDOWN_SCHEDULER = protectionCountdownScheduler;
+        this.javaPlugin = javaPlugin;
+        this.logger = javaPlugin.getLogger();
+        this.gameAssets = gameAssets;
+        this.mapManager = mapManager;
+        this.protectionCountdownScheduler = protectionCountdownScheduler;
     }
 
     @Override
@@ -47,9 +51,9 @@ public final class LobbyCountdownScheduler implements IScheduler, ICountdownOpti
 
         countdown = 60;
         isRunning = true;
-        LOGGER.info("The countdown is starting...");
+        logger.info("The countdown is starting...");
 
-        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(JAVA_PLUGIN, () -> {
+        taskID = BUKKIT_SCHEDULER.scheduleSyncRepeatingTask(javaPlugin, () -> {
             final Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
 
             onlinePlayers.forEach(player -> player.setLevel(countdown));
@@ -57,41 +61,41 @@ public final class LobbyCountdownScheduler implements IScheduler, ICountdownOpti
             switch (countdown) {
                 //Lobby phase mechanics.
                 case 30, 10, 5, 3, 2, 1 -> onlinePlayers.forEach(player -> {
-                        player.sendPlainMessage(Message.PREFIX + getCountdownMessage(countdown));
-                        playCountdownSound(player);
+                    player.sendPlainMessage(Message.PREFIX + getCountdownMessage(countdown));
+                    playCountdownSound(player);
                 });
                 case 0 -> {
                     //Starting game mechanics.
                     onlinePlayers.forEach(player ->
                             player.sendPlainMessage(Message.PREFIX + "The game is starting now."));
 
-                    GAME_ASSETS.setGameState(GameState.PROTECTION);
-                    GAME_ASSETS.getONLINE_PLAYERS_ALIVE().addAll(onlinePlayers);
+                    gameAssets.setGameState(GameState.PROTECTION);
+                    gameAssets.getOnlinePlayersAlive().addAll(onlinePlayers);
 
-                    final List<String> gameMaps = MAP_MANAGER.getMapList();
+                    final List<String> gameMaps = mapManager.getMapList();
                     Collections.shuffle(gameMaps);
 
                     final String selectedGameMapName = gameMaps.get(0);
-                    final World selectedGameMap = MAP_MANAGER.loadMap(selectedGameMapName);
+                    final World selectedGameMap = mapManager.loadMap(selectedGameMapName);
 
                     if (selectedGameMap == null) {
-                        LOGGER.severe("The game map named \"" + selectedGameMapName + "\" couldn't be found.");
+                        logger.severe("The game map named \"" + selectedGameMapName + "\" couldn't be found.");
                         stop();
                         return;
                     }
 
-                    final Location gameMapSpawn = MAP_MANAGER.getMapSpawnPoint(selectedGameMapName);
+                    final Location gameMapSpawn = mapManager.getMapSpawnPoint(selectedGameMapName);
 
                     if (gameMapSpawn == null) {
-                        LOGGER.severe("There isn't a configured spawn point for the map named \"" +
+                        logger.severe("There isn't a configured spawn point for the map named \"" +
                                 selectedGameMapName + "\"");
                         stop();
                         return;
                     }
 
-                    final int deathHeight = MAP_MANAGER.getDeathHeight(selectedGameMapName);
+                    final int deathHeight = mapManager.getDeathHeight(selectedGameMapName);
 
-                    GAME_ASSETS.setGameConfiguration(
+                    gameAssets.setGameConfiguration(
                             new GameConfiguration(selectedGameMap, gameMapSpawn, deathHeight, System.currentTimeMillis())
                     );
 
@@ -100,8 +104,8 @@ public final class LobbyCountdownScheduler implements IScheduler, ICountdownOpti
                         player.setGameMode(GameMode.ADVENTURE);
                     });
 
-                    if (!PROTECTION_COUNTDOWN_SCHEDULER.isRunning()) {
-                        PROTECTION_COUNTDOWN_SCHEDULER.start();
+                    if (!protectionCountdownScheduler.isRunning()) {
+                        protectionCountdownScheduler.start();
                     }
 
                     stop();
@@ -118,7 +122,7 @@ public final class LobbyCountdownScheduler implements IScheduler, ICountdownOpti
 
         isRunning = false;
         BUKKIT_SCHEDULER.cancelTask(taskID);
-        LOGGER.info("The starting countdown was cancelled.");
+        logger.info("The starting countdown was cancelled.");
     }
 
     @Override

@@ -1,5 +1,7 @@
 package de.will_smith_007.tntrun.managers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import lombok.NonNull;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,10 +14,11 @@ import java.util.logging.Logger;
  * The {@link DatabaseFileManager} is used to create a file in which the server administrator can configure the
  * data which is required to connect to a MySQL or MariaDB database.
  */
+@Singleton
 public class DatabaseFileManager {
 
-    private final File DATABASE_CONFIG;
-    private final YamlConfiguration YAML_CONFIGURATION;
+    private final File databaseConfig;
+    private final YamlConfiguration yamlConfiguration;
 
     /**
      * Creates the "DatabaseConfig.yml" file in the directory of this plugin.
@@ -26,20 +29,21 @@ public class DatabaseFileManager {
      * @param javaPlugin Java plugin which contains required information such as the directory path of
      *                   this plugin or the configured {@link Logger}
      */
+    @Inject
     public DatabaseFileManager(@NonNull JavaPlugin javaPlugin) {
         final Logger logger = javaPlugin.getLogger();
 
         final File databaseConfigDirectory = new File(javaPlugin.getDataFolder().getPath());
         final String configName = "DatabaseConfig.yml";
-        this.DATABASE_CONFIG = new File(databaseConfigDirectory + "/" + configName);
+        this.databaseConfig = new File(databaseConfigDirectory + "/" + configName);
 
         if (databaseConfigDirectory.mkdirs()) {
             logger.info("Database configuration directory was created.");
         }
 
-        if (!DATABASE_CONFIG.exists()) {
+        if (!databaseConfig.exists()) {
             try {
-                if (DATABASE_CONFIG.createNewFile()) {
+                if (databaseConfig.createNewFile()) {
                     logger.info("Database configuration file was created.");
                 }
             } catch (IOException ioException) {
@@ -47,7 +51,7 @@ public class DatabaseFileManager {
             }
         }
 
-        YAML_CONFIGURATION = YamlConfiguration.loadConfiguration(DATABASE_CONFIG);
+        yamlConfiguration = YamlConfiguration.loadConfiguration(databaseConfig);
 
         setConfigDefaults();
     }
@@ -58,7 +62,7 @@ public class DatabaseFileManager {
      * @return True if the database is enabled and a connection should be established.
      */
     public boolean isDatabaseEnabled() {
-        return YAML_CONFIGURATION.getBoolean("Enabled");
+        return yamlConfiguration.getBoolean("Enabled");
     }
 
     /**
@@ -67,7 +71,7 @@ public class DatabaseFileManager {
      * @return The host address in a String format.
      */
     public String getHostAddress() {
-        return YAML_CONFIGURATION.getString("HostAddress");
+        return yamlConfiguration.getString("HostAddress");
     }
 
     /**
@@ -76,7 +80,7 @@ public class DatabaseFileManager {
      * @return The port as an Integer.
      */
     public int getPort() {
-        return YAML_CONFIGURATION.getInt("Port");
+        return yamlConfiguration.getInt("Port");
     }
 
     /**
@@ -85,7 +89,7 @@ public class DatabaseFileManager {
      * @return The username which the database should be using.
      */
     public String getDatabaseUsername() {
-        return YAML_CONFIGURATION.getString("Username");
+        return yamlConfiguration.getString("Username");
     }
 
     /**
@@ -94,7 +98,7 @@ public class DatabaseFileManager {
      * @return The name of the database which should be used to store the statistics data.
      */
     public String getDatabaseName() {
-        return YAML_CONFIGURATION.getString("DatabaseName");
+        return yamlConfiguration.getString("DatabaseName");
     }
 
     /**
@@ -103,7 +107,7 @@ public class DatabaseFileManager {
      * @return The password for the configured username which is required to establish a connection.
      */
     public String getSecret() {
-        return YAML_CONFIGURATION.getString("Secret");
+        return yamlConfiguration.getString("Secret");
     }
 
     /**
@@ -111,28 +115,28 @@ public class DatabaseFileManager {
      * saves the file after.
      */
     private void setConfigDefaults() {
-        if (YAML_CONFIGURATION.get("Enabled") == null) {
-            YAML_CONFIGURATION.set("Enabled", false);
+        if (yamlConfiguration.get("Enabled") == null) {
+            yamlConfiguration.set("Enabled", false);
         }
 
         if (getHostAddress() == null) {
-            YAML_CONFIGURATION.set("HostAddress", "127.0.0.1");
+            yamlConfiguration.set("HostAddress", "127.0.0.1");
         }
 
-        if (YAML_CONFIGURATION.get("Port") == null) {
-            YAML_CONFIGURATION.set("Port", 3306);
+        if (yamlConfiguration.get("Port") == null) {
+            yamlConfiguration.set("Port", 3306);
         }
 
         if (getDatabaseUsername() == null) {
-            YAML_CONFIGURATION.set("Username", "development");
+            yamlConfiguration.set("Username", "development");
         }
 
         if (getDatabaseName() == null) {
-            YAML_CONFIGURATION.set("DatabaseName", "tntrun");
+            yamlConfiguration.set("DatabaseName", "tntrun");
         }
 
         if (getSecret() == null) {
-            YAML_CONFIGURATION.set("Secret", "1234");
+            yamlConfiguration.set("Secret", "1234");
         }
 
         saveDatabaseConfiguration();
@@ -143,7 +147,7 @@ public class DatabaseFileManager {
      */
     private void saveDatabaseConfiguration() {
         try {
-            YAML_CONFIGURATION.save(DATABASE_CONFIG);
+            yamlConfiguration.save(databaseConfig);
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
