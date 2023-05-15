@@ -9,15 +9,16 @@ import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Singleton
 public final class PlayerAFKRemoverScheduler implements IScheduler {
@@ -26,14 +27,12 @@ public final class PlayerAFKRemoverScheduler implements IScheduler {
     private boolean isRunning;
     private final JavaPlugin javaPlugin;
     private final GameAssets gameAssets;
-    private final List<Material> removingGameMaterials;
 
     @Inject
     public PlayerAFKRemoverScheduler(@NonNull JavaPlugin javaPlugin,
                                      @NonNull GameAssets gameAssets) {
         this.javaPlugin = javaPlugin;
         this.gameAssets = gameAssets;
-        this.removingGameMaterials = gameAssets.getRemovingGameMaterials();
     }
 
     @Override
@@ -62,15 +61,7 @@ public final class PlayerAFKRemoverScheduler implements IScheduler {
                 //This is the speed of a player when he's standing still.
                 if (speed != 0.10d) continue;
 
-                final Location playerLocation = player.getLocation();
-
-                final Block blockBelowPlayer = playerLocation.getBlock().getRelative(BlockFace.DOWN);
-                final Block blockBelowRemovingBlock = blockBelowPlayer.getRelative(BlockFace.DOWN);
-
-                if (!removingGameMaterials.contains(blockBelowPlayer.getType())) continue;
-
-                blockBelowPlayer.setType(Material.AIR);
-                blockBelowRemovingBlock.setType(Material.AIR);
+                removeBlocksUnderneath(player);
             }
         }, 0L, 5L);
     }
@@ -86,5 +77,26 @@ public final class PlayerAFKRemoverScheduler implements IScheduler {
     @Override
     public boolean isRunning() {
         return isRunning;
+    }
+
+    /**
+     * Removes all underneath blocks where the player stands on.
+     * @param player Player from which the underneath blocks should be removed.
+     */
+    public void removeBlocksUnderneath(@NonNull Player player) {
+        final Set<Location> locations = new HashSet<>();
+        final World playerWorld = player.getWorld();
+        final BoundingBox boundingBox = player.getBoundingBox().expand(0.3, 0, 0.3);
+
+        for (double x = boundingBox.getMinX(); x < boundingBox.getMaxX(); x++) {
+            for (double z = boundingBox.getMinZ(); z < boundingBox.getMaxZ(); z++) {
+                locations.add(new Location(playerWorld, x, boundingBox.getMinY() - 1, z));
+                locations.add(new Location(playerWorld, x, boundingBox.getMinY() - 2, z));
+            }
+        }
+
+        for (Location location : locations) {
+            location.getBlock().setType(Material.AIR);
+        }
     }
 }
