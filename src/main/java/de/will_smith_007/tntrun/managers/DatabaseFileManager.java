@@ -35,7 +35,7 @@ public class DatabaseFileManager {
 
         final File databaseConfigDirectory = new File(javaPlugin.getDataFolder().getPath());
         final String configName = "DatabaseConfig.yml";
-        this.databaseConfig = new File(databaseConfigDirectory + "/" + configName);
+        this.databaseConfig = new File(databaseConfigDirectory, configName);
 
         if (databaseConfigDirectory.mkdirs()) {
             logger.info("Database configuration directory was created.");

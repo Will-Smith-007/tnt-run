@@ -58,6 +58,8 @@ public class MySQL {
      */
     private void connect() {
         try {
+            if (connection != null && !connection.isClosed()) return;
+
             final HikariConfig hikariConfig = new HikariConfig();
             hikariConfig.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database);
             hikariConfig.setUsername(username);
@@ -102,11 +104,9 @@ public class MySQL {
      * @param query The SQL update query which should be performed by the database.
      */
     public void update(@NotNull String query) {
-        try {
-            if (connection == null || connection.isClosed()) connect();
-            final Statement statement = connection.createStatement();
+        connect();
+        try (final Statement statement = connection.createStatement()){
             statement.executeUpdate(query);
-            statement.close();
         } catch (SQLException sqlException) {
             sqlException.printStackTrace();
         }
@@ -119,8 +119,8 @@ public class MySQL {
      * @return The {@link PreparedStatement} of the query to work with.
      */
     public PreparedStatement preparedStatement(@NonNull String sqlQuery) {
+        connect();
         try {
-            if (connection == null || connection.isClosed()) connect();
             return connection.prepareStatement(sqlQuery);
         } catch (SQLException sqlException) {
             sqlException.printStackTrace();

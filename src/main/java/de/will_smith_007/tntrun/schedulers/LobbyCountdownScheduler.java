@@ -112,6 +112,9 @@ public final class LobbyCountdownScheduler implements IScheduler, ICountdownOpti
 
                     stop();
                 }
+                default -> {
+                    return;
+                }
             }
 
             countdown--;

@@ -85,51 +85,51 @@ public class PlayerMoveListener implements Listener {
         }
 
         //Player elimination when the current player height is below the configured death height of the map.
-        if (playerHeight <= deathHeight) {
-            final Location gameMapSpawn = gameConfiguration.gameSpawnLocation();
-            player.setGameMode(GameMode.SPECTATOR);
-            player.teleport(gameMapSpawn);
-            playersAlive.remove(player);
+        if (playerHeight > deathHeight) return;
 
-            final int playersAliveSize = playersAlive.size();
+        final Location gameMapSpawn = gameConfiguration.gameSpawnLocation();
+        player.setGameMode(GameMode.SPECTATOR);
+        player.teleport(gameMapSpawn);
+        playersAlive.remove(player);
 
-            Bukkit.getOnlinePlayers().forEach(onlinePlayer ->
-                    onlinePlayer.sendPlainMessage(Message.PREFIX + "§e" + player.getName() + "§c fell to death! " +
-                            (playersAliveSize > 1 ? playersAliveSize + "§c players remaining." :
-                                    "§e" + playersAlive.get(0).getName() + "§a won the game!"))
-            );
+        final int playersAliveSize = playersAlive.size();
 
-            final long currentTimeMillis = System.currentTimeMillis();
-            final long startedGameTimeMillis = gameConfiguration.startedGameTimeMillis();
-            final long differenceTimeMillis = (currentTimeMillis - startedGameTimeMillis);
+        Bukkit.getOnlinePlayers().forEach(onlinePlayer ->
+                onlinePlayer.sendPlainMessage(Message.PREFIX + "§e" + player.getName() + "§c fell to death! " +
+                        (playersAliveSize > 1 ? playersAliveSize + "§c players remaining." :
+                                "§e" + playersAlive.get(0).getName() + "§a won the game!"))
+        );
 
-            player.sendPlainMessage(Message.PREFIX + "§aYou've survived §e" + getTimerFormat(differenceTimeMillis));
+        final long currentTimeMillis = System.currentTimeMillis();
+        final long startedGameTimeMillis = gameConfiguration.startedGameTimeMillis();
+        final long differenceTimeMillis = (currentTimeMillis - startedGameTimeMillis);
 
-            //The eliminated player gets a loss and the survived time milliseconds is updating if it's higher than before.
-            if (statsManager.isDatabaseEnabled()) {
-                final UUID playerUUID = player.getUniqueId();
-                statsManager.addGameLoseAsync(playerUUID);
-                statsManager.updateLongestSurvivedTimeAsync(playerUUID, differenceTimeMillis);
-            }
+        player.sendPlainMessage(Message.PREFIX + "§aYou've survived §e" + getTimerFormat(differenceTimeMillis));
 
-            //If there's only one player left or alive in this game, the winner receives a win and the game ends.
-            if (playersAlive.size() == 1) {
-                gameAssets.setGameState(GameState.ENDING);
-
-                if (endingCountdownScheduler.isRunning()) return;
-                endingCountdownScheduler.start();
-
-                final Player winnerPlayer = playersAlive.get(0);
-                winnerPlayer.sendPlainMessage(Message.PREFIX + "§aYou've survived §e" + getTimerFormat(differenceTimeMillis));
-
-                //The winner gets a win and the survived time milliseconds is updating if it's higher than before.
-                if (statsManager.isDatabaseEnabled()) {
-                    final UUID winnerPlayerUUID = winnerPlayer.getUniqueId();
-                    statsManager.addGameWinAsync(winnerPlayerUUID);
-                    statsManager.updateLongestSurvivedTimeAsync(winnerPlayerUUID, differenceTimeMillis);
-                }
-            }
+        //The eliminated player gets a loss and the survived time milliseconds is updating if it's higher than before.
+        if (statsManager.isDatabaseEnabled()) {
+            final UUID playerUUID = player.getUniqueId();
+            statsManager.addGameLoseAsync(playerUUID);
+            statsManager.updateLongestSurvivedTimeAsync(playerUUID, differenceTimeMillis);
         }
+
+        //If there's only one player left or alive in this game, the winner receives a win and the game ends.
+        if (playersAlive.size() != 1) return;
+
+        gameAssets.setGameState(GameState.ENDING);
+
+        if (endingCountdownScheduler.isRunning()) return;
+        endingCountdownScheduler.start();
+
+        final Player winnerPlayer = playersAlive.get(0);
+        winnerPlayer.sendPlainMessage(Message.PREFIX + "§aYou've survived §e" + getTimerFormat(differenceTimeMillis));
+
+        //The winner gets a win and the survived time milliseconds is updating if it's higher than before.
+        if (!statsManager.isDatabaseEnabled()) return;
+
+        final UUID winnerPlayerUUID = winnerPlayer.getUniqueId();
+        statsManager.addGameWinAsync(winnerPlayerUUID);
+        statsManager.updateLongestSurvivedTimeAsync(winnerPlayerUUID, differenceTimeMillis);
     }
 
     /**

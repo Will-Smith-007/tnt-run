@@ -23,6 +23,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TNTRun extends JavaPlugin {
@@ -98,8 +99,9 @@ public class TNTRun extends JavaPlugin {
             logger.warning("There is currently no configured waiting map.");
         } else {
             final World world = mapManager.loadMap(waitingMap);
-            logger.info("The waiting map named \"" + waitingMap + "\" " +
-                    (world == null ? "couldn't be loaded." : "was successfully loaded."));
+            final String loadingText = (world == null ? "couldn't be loaded." : "was successfully loaded.");
+            final Object[] loggingArray = {waitingMap, loadingText};
+            logger.log(Level.INFO, "The waiting map named \"{0}\" {1}", loggingArray);
         }
 
         if (gameMaps.isEmpty()) {

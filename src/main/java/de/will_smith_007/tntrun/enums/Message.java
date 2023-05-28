@@ -12,10 +12,10 @@ public enum Message {
 
     PREFIX("§f[§cTNT-Run§f] §7");
 
-    private final String message;
+    private final String content;
 
     @Override
     public String toString() {
-        return message;
+        return content;
     }
 }

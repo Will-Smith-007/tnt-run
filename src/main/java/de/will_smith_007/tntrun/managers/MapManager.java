@@ -13,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -39,7 +40,7 @@ public class MapManager {
 
         final File mapConfigDirectory = new File(javaPlugin.getDataFolder().getPath());
         final String configName = "MapConfig.yml";
-        this.mapConfig = new File(mapConfigDirectory + "/" + configName);
+        this.mapConfig = new File(mapConfigDirectory, configName);
 
         if (mapConfigDirectory.mkdirs()) {
             logger.info("World configuration directory was created.");
@@ -134,8 +135,7 @@ public class MapManager {
         yamlConfiguration.set("Maps", mapList);
 
         saveMapConfiguration();
-
-        logger.info("The map named " + mapName + " was added.");
+        logger.log(Level.INFO, "The map named {0} was added.", mapName);
     }
 
     /**
@@ -152,8 +152,7 @@ public class MapManager {
         yamlConfiguration.set("Maps", mapList);
 
         saveMapConfiguration();
-
-        logger.info("The map named " + mapName + " was removed.");
+        logger.log(Level.INFO, "The map named {0} was removed.", mapName);
     }
 
     /**
@@ -166,7 +165,7 @@ public class MapManager {
 
         saveMapConfiguration();
 
-        logger.info("Waiting map was set to " + mapName);
+        logger.log(Level.INFO, "Waiting map was set to {0}", mapName);
     }
 
     /**
@@ -184,7 +183,7 @@ public class MapManager {
 
         saveMapConfiguration();
 
-        logger.info("The map spawn point for \"" + mapName + "\" was set.");
+        logger.log(Level.INFO, "The map spawn point for \"{0}\" was set.", mapName);
     }
 
     /**
@@ -198,7 +197,8 @@ public class MapManager {
 
         saveMapConfiguration();
 
-        logger.info("The death height for \"" + mapName + "\" was set to " + deathHeight);
+        final Object[] objects = {mapName, deathHeight};
+        logger.log(Level.INFO, "The death height for \"{0}\" was set to {1}", objects);
     }
 
     /**
